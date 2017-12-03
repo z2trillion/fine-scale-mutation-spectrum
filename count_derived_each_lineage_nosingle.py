@@ -29,24 +29,6 @@ for trimer in product(bases, bases, bases):
         if trimer[1] != base:
             mutations.append((''.join(trimer), base))
 
-print 'opening file'
-infile=gzip.open('data/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
-print 'file open'
-
-for line in infile:
-    if line.startswith('#CHROM'):
-        break
-print 'fast forwarded through file'
-
-sample_ids = line.split()[9:]
-n_lineages = 2 * len(sample_ids)
-
-mutation_counts = {
-    (mutation, haplotype_index): 0
-    for haplotype_index in range(n_lineages)
-    for mutation in mutations
-}
-
 class BadDataQualityError(Exception):
     pass
 
@@ -78,45 +60,43 @@ def parse_line(line):
 
     return reference_allele, alternate_allele, position, derived_count, alleles
 
-anc_ind=0
-for counter, line in enumerate(infile):
-    try:
-        (
-            reference_allele,
-            alternate_allele,
-            position,
-            derived_count,
-            alleles
-        ) = parse_line(line)
-    except BadDataQualityError:
-        continue
-
+def get_mutation(position, reference_allele, alternate_allele):
     context = refseq[position - 2 : position + 1]
+    if 'N' in context:
+        raise BadDataQualityError
 
-    if 'N' not in context:
-        if chimp_alleles.get(position) == alternate_allele:
-            reverse=True
-            derived_allele='0'
-            this_mut=(context[0]+alternate_allele+context[2],reference_allele)
-        else:
-            reverse=False
-            derived_allele='1'
-            this_mut=(context,alternate_allele)
+    if chimp_alleles.get(position) == alternate_allele:
+        derived_allele='0'
+        this_mut=(context[0] + alternate_allele + context[2], reference_allele)
+    else:
+        derived_allele='1'
+        this_mut=(context, alternate_allele)
 
-        if derived_count>1 and n_lineages-derived_count>1:
-            if reverse:
-                derived_count=n_lineages-derived_count
-            i=9
-            der_observed=0
+    return derived_allele, this_mut
 
-            for i, allele in enumerate(alleles):
-                if allele == derived_allele:
-                    mutation_counts[(this_mut, i)] += 1
-                    der_observed += 1
-            assert der_observed == derived_count
+def process_line(line):
+    (
+        reference_allele,
+        alternate_allele,
+        position,
+        derived_count,
+        alleles
+    ) = parse_line(line)
+    derived_allele, this_mut = get_mutation(position, reference_allele,
+        alternate_allele)
+    return derived_allele, derived_count, this_mut, alleles
 
-    if counter > 100:
-        break
+def update_counts(alleles, mutation_counts, derived_count, derived_allele):
+    if derived_count>1 and n_lineages-derived_count>1:
+        if derived_allele == '0':
+            derived_count=n_lineages-derived_count
+        der_observed=0
+
+        for i, allele in enumerate(alleles):
+            if allele == derived_allele:
+                mutation_counts[(this_mut, i)] += 1
+                der_observed += 1
+        assert der_observed == derived_count
 
 def write_output(mutation_counts):
     output='Mut_type '
@@ -133,6 +113,36 @@ def write_output(mutation_counts):
 
     with open('derived_each_lineage_chr'+chrom+'_nosingle.txt','w') as outfile:
         outfile.write(output)
+
+print 'opening file'
+gzip_path = 'data/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz'
+with gzip.open(gzip_path) as infile:
+    print 'file open'
+
+    for line in infile:
+        if line.startswith('#CHROM'):
+            break
+    print 'fast forwarded through file'
+
+    sample_ids = line.split()[9:]
+    n_lineages = 2 * len(sample_ids)
+
+    mutation_counts = {
+        (mutation, haplotype_index): 0
+        for haplotype_index in range(n_lineages)
+        for mutation in mutations
+    }
+
+    for counter, line in enumerate(infile):
+        try:
+            derived_allele, derived_count, this_mut, alleles = process_line(line)
+        except BadDataQualityError:
+            continue
+
+        update_counts(alleles, mutation_counts, derived_count, derived_allele)
+
+        if counter % 1e3 == 0:
+            print counter
 
 write_output(mutation_counts)
 
