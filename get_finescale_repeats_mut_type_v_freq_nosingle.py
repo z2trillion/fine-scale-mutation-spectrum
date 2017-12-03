@@ -5,7 +5,7 @@ import gzip
 chrom=sys.argv[1]
 
 
-infile=open('nestedRepeats.txt')
+infile=open('data/nestedRepeats.txt')
 lines=infile.readlines()
 infile.close()
 
@@ -37,7 +37,7 @@ while ind<len(lines)-1 and s[1]== 'chr'+chrom:
 
 print len(conserved), conserved[:10]
 
-infile=open('1000genomes_phase3_sample_IDs.txt')
+infile=open('data/1000genomes_phase3_sample_IDs.txt')
 lines=infile.readlines()
 infile.close()
 
@@ -62,12 +62,12 @@ for line in lines:
         pop_thisID[s[0]]=s[2]
 
 
-infile=open('../hg19_reference/chr'+chrom+'_oneline.txt')
+infile=open('data/hg19_reference/chr'+chrom+'_oneline.txt')
 refseq=infile.read()
 infile.close()
 
 
-infile=open('../hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt')
+infile=open('data/hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt')
 anc_lines=infile.readlines()
 infile.close()
 
@@ -83,11 +83,11 @@ for b1 in 'ACGT':
 mut_count=dict({})
 for pop in allpops:
     for mut in muts:
-        for i in range(10001):
+        for i in range(250):
             mut_count[(mut,pop,i)]=0
 
 print 'opening file'
-infile=gzip.open('../phase3_1kg/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz')
+infile=gzip.open('data/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
 print 'file open'
 
 line=infile.readline()
@@ -136,7 +136,7 @@ anc_ind=0
 
 conserved_ind=0
 
-for line in infile:
+for line_counter, line in enumerate(infile):
     s=line.strip('\n').split('\t')
     pos=int(s[1])
     context=refseq[pos-2:pos+1]
@@ -154,7 +154,7 @@ for line in infile:
             der_allele='1'
             this_mut=(context,s[4])
         s2=s[7].split(';')
-        count_der=int(s2[0][3:])        
+        count_der=int(s2[0][3:])
         if min(count_der,num_lineages-count_der)>1:
             if reverse:
                 count_der=num_lineages-count_der
@@ -171,6 +171,9 @@ for line in infile:
             for pop in allpops:
                 if count[pop]>0:
                     mut_count[(this_mut,pop,count[pop])]+=1
+    print line_counter
+    if line_counter > 1e4:
+        break
 
 for pop in allpops:
     for mut in muts:
@@ -183,4 +186,3 @@ for pop in allpops:
     outfile.close()
 
 print 'finished chrom ',chrom
-
