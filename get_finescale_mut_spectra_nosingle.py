@@ -26,7 +26,6 @@ print 'file open'
 
 line=infile.readline()
 while not line.startswith('#CHROM'):
-#    print line
     line=infile.readline()
 
 print 'fast forwarded through file'
@@ -38,8 +37,8 @@ for i in range(9,len(s)):
     output+=' '+sample_id_to_population[s[i]]
 output+='\n'
 
-popul=dict({})
-indices=dict({})
+popul = {}
+indices = {}
 
 for pop in populations:
     indices[pop]=[]
@@ -48,7 +47,7 @@ for i in range(9,len(s)):
     popul[i]=sample_id_to_population[s[i]]
     indices[popul[i]].append(i)
 
-count=dict({})
+count = {}
 
 anc_ind=0
 
