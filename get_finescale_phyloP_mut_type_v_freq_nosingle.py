@@ -1,9 +1,11 @@
 from copy import deepcopy
 import sys
 import gzip
+from labels import sample_id_to_population, populations
+from mutations import mutations, bases
+from common import reference_sequence, human_chimp_differences
 
 chrom=sys.argv[1]
-
 
 infile=open('data/phastConsElements100way.txt')
 lines=infile.readlines()
@@ -37,48 +39,12 @@ infile=open('data/1000genomes_phase3_sample_IDs.txt')
 lines=infile.readlines()
 infile.close()
 
-big_populs=['EAS','SAS','EUR','AMR','AFR']
-populs=dict({})
-populs['EAS']=['CHB','JPT','CHS','CDX','KHV']
-populs['EUR']=['CEU','TSI','GBR','FIN','IBS']
-populs['AFR']=['YRI','LWK','GWD','MSL','ESN']
-populs['SAS']=['GIH','PJL','BEB','STU','ITU']
-populs['AMR']=['CLM','MXL','PUR','PEL','ACB','ASW']
-group=dict({})
-allpops=[]
-for bigpop in big_populs:
-    for pop in populs[bigpop]:
-        allpops.append(pop)
-        group[pop]=bigpop
-
-pop_thisID=dict({})
-for line in lines:
-    s=line.split('\t')
-    if len(s)>3:
-        pop_thisID[s[0]]=s[2]
-
-
-infile=open('data/hg19_reference/chr'+chrom+'_oneline.txt')
-refseq=infile.read()
-infile.close()
-
-
-infile=open('data/hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt')
-anc_lines=infile.readlines()
-infile.close()
-
-
-muts=[]
-for b1 in 'ACGT':
-    for b2 in 'ACGT':
-        for b3 in 'ACGT':
-            for b4 in 'ACGT':
-                if not b2==b4:
-                    muts.append((b1+b2+b3,b4))
+refseq = reference_sequence(chrom)
+anc_lines = human_chimp_differences(chrom)
 
 mut_count=dict({})
-for pop in allpops:
-    for mut in muts:
+for pop in populations:
+    for mut in mutations:
         for i in range(250):
             mut_count[(mut,pop,i)]=0
 
@@ -94,31 +60,22 @@ s=line.strip('\n').split('\t')
 num_lineages=2*(len(s)-9)
 
 output=dict({})
-for bigpop in allpops:
+for bigpop in populations:
     output[bigpop]='Ref Alt '
 
 popul=dict({})
 
 indices=dict({})
-for p in allpops:
+for p in populations:
     indices[p]=[]
 
 for i in range(9,len(s)):
-    popul[i]=pop_thisID[s[i]]
+    popul[i]=sample_id_to_population[s[i]]
     indices[popul[i]].append(i)
 
 count = {}
 AF=dict({})
 
-anc_lines.pop(0)
-anc_ind=0
-while anc_ind<len(anc_lines):
-    s=anc_lines[anc_ind].strip('\n').split(' ')
-    if s[1]=='SNP':
-        anc_lines[anc_ind]=deepcopy(s)
-        anc_ind+=1
-    else:
-        anc_lines.pop(anc_ind)
 anc_ind=0
 
 conserved_ind=0
@@ -147,7 +104,7 @@ for line_counter, line in enumerate(infile):
                 count_der=num_lineages-count_der
             i=9
             der_observed=0
-            for pop in allpops:
+            for pop in populations:
                 count[pop]=0
             while i<len(s) and der_observed<count_der:
                 for j in [0,2]:
@@ -155,15 +112,15 @@ for line_counter, line in enumerate(infile):
                         count[popul[i]]+=1
                         der_observed+=1
                 i+=1
-            for pop in allpops:
+            for pop in populations:
                 if count[pop]>0:
                     mut_count[(this_mut,pop,count[pop])]+=1
     print line_counter
     if line_counter > 1e4:
         break
 
-for pop in allpops:
-    for mut in muts:
+for pop in populations:
+    for mut in mutations:
         output[pop]+=mut[0]+'_'+mut[1]
         for i in range(1,2*len(indices[pop])+1):
             output[pop]+=' '+str(mut_count[(mut,pop,i)])

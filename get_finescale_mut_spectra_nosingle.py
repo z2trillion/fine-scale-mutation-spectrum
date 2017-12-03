@@ -3,22 +3,13 @@ import sys
 import gzip
 from itertools import product
 from labels import populations, sample_id_to_population
+from mutations import mutations, bases
+from common import reference_sequence, human_chimp_differences
 
 chrom=sys.argv[1]
 
-with open('data/hg19_reference/chr'+chrom+'_oneline.txt') as infile:
-    refseq=infile.read()
-
-with open('data/hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt') as infile:
-    infile.next()
-    anc_lines = [line.split() for line in infile if 'SNP' in line]
-
-bases = 'ACGT'
-mutations=[]
-for trimer in product(bases, bases, bases):
-    for base in bases:
-        if trimer[1] != base:
-            mutations.append((''.join(trimer), base))
+refseq = reference_sequence(chrom)
+anc_lines = human_chimp_differences(chrom)
 
 print 'opening file'
 infile=gzip.open('data/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
