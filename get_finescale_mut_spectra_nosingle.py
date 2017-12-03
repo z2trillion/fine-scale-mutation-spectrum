@@ -4,7 +4,7 @@ import gzip
 
 chrom=sys.argv[1]
 
-infile=open('1000genomes_phase3_sample_IDs.txt')
+infile=open('data/1000genomes_phase3_sample_IDs.txt')
 lines=infile.readlines()
 infile.close()
 
@@ -29,11 +29,11 @@ for line in lines:
         pop_thisID[s[0]]=s[2]
 
 
-infile=open('../hg19_reference/chr'+chrom+'_oneline.txt')
+infile=open('data/hg19_reference/chr'+chrom+'_oneline.txt')
 refseq=infile.read()
 infile.close()
 
-infile=open('../hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt')
+infile=open('data/hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt')
 anc_lines=infile.readlines()
 infile.close()
 
@@ -47,7 +47,7 @@ for b1 in 'ACGT':
                     muts.append((b1+b2+b3,b4))
 
 print 'opening file'
-infile=gzip.open('../phase3_1kg/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz')
+infile=gzip.open('data/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
 print 'file open'
 
 line=infile.readline()
@@ -101,7 +101,7 @@ for pop in allpops:
         output[pop]+=' '+str(i)
         for mut in muts:
             mut_count[(mut,pop,i)]=0
-    output[pop]+='\n'    
+    output[pop]+='\n'
 
 for line in infile:
     s=line.strip('\n').split('\t')
@@ -119,7 +119,7 @@ for line in infile:
             der_allele='1'
             this_mut=(context,s[4])
         s2=s[7].split(';')
-        count_der=int(s2[0][3:])        
+        count_der=int(s2[0][3:])
         if min(count_der,num_lineages-count_der)>1:
             if reverse:
                 count_der=num_lineages-count_der
@@ -148,4 +148,3 @@ for pop in allpops:
     outfile.close()
 
 print 'finished chrom ',chrom
-
