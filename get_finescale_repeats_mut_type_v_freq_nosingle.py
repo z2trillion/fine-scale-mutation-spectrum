@@ -1,4 +1,3 @@
-from copy import deepcopy
 import sys
 import gzip
 from mutations import mutations, bases
@@ -42,7 +41,7 @@ infile.close()
 refseq = reference_sequence(chrom)
 anc_lines = human_chimp_differences(chrom)
 
-mut_count=dict({})
+mut_count = {}
 for pop in populations:
     for mut in mutations:
         for i in range(250):
@@ -73,16 +72,9 @@ for i in range(9,len(s)):
     popul[i]=sample_id_to_population[s[i]]
     indices[popul[i]].append(i)
 
-count=dict({})
+count = {}
 AF=dict({})
 
-indcount=dict({})
-indcount['0|0']=0
-for gt in ['0|1','1|0','0/1','1/0']:
-    indcount[gt]=1
-indcount['1|1']=2
-
-anc_lines.pop(0)
 anc_ind=0
 
 conserved_ind=0

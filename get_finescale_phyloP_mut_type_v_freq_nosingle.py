@@ -1,8 +1,7 @@
-from copy import deepcopy
 import sys
 import gzip
-from labels import sample_id_to_population, populations
 from mutations import mutations, bases
+from labels import sample_id_to_population, populations
 from common import reference_sequence, human_chimp_differences
 
 chrom=sys.argv[1]
@@ -42,7 +41,7 @@ infile.close()
 refseq = reference_sequence(chrom)
 anc_lines = human_chimp_differences(chrom)
 
-mut_count=dict({})
+mut_count = {}
 for pop in populations:
     for mut in mutations:
         for i in range(250):
