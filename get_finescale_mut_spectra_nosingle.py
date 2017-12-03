@@ -1,6 +1,7 @@
 from copy import deepcopy
 import sys
 import gzip
+from itertools import product
 
 chrom=sys.argv[1]
 
@@ -29,22 +30,19 @@ for line in lines:
         pop_thisID[s[0]]=s[2]
 
 
-infile=open('data/hg19_reference/chr'+chrom+'_oneline.txt')
-refseq=infile.read()
-infile.close()
+with open('data/hg19_reference/chr'+chrom+'_oneline.txt') as infile:
+    refseq=infile.read()
 
-infile=open('data/hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt')
-anc_lines=infile.readlines()
-infile.close()
+with open('data/hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt') as infile:
+    infile.next()
+    anc_lines = [line.split() for line in infile if 'SNP' in line]
 
-
-muts=[]
-for b1 in 'ACGT':
-    for b2 in 'ACGT':
-        for b3 in 'ACGT':
-            for b4 in 'ACGT':
-                if not b2==b4:
-                    muts.append((b1+b2+b3,b4))
+bases = 'ACGT'
+mutations=[]
+for trimer in product(bases, bases, bases):
+    for base in bases:
+        if trimer[1] != base:
+            mutations.append((''.join(trimer), base))
 
 print 'opening file'
 infile=gzip.open('data/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
@@ -76,21 +74,6 @@ for i in range(9,len(s)):
 
 count=dict({})
 
-indcount=dict({})
-indcount['0|0']=0
-for gt in ['0|1','1|0','0/1','1/0']:
-    indcount[gt]=1
-indcount['1|1']=2
-
-anc_lines.pop(0)
-anc_ind=0
-while anc_ind<len(anc_lines):
-    s=anc_lines[anc_ind].strip('\n').split(' ')
-    if s[1]=='SNP':
-        anc_lines[anc_ind]=deepcopy(s)
-        anc_ind+=1
-    else:
-        anc_lines.pop(anc_ind)
 anc_ind=0
 
 output=dict({})
@@ -99,7 +82,7 @@ for pop in allpops:
     output[pop]='Mut'
     for i in range(1,2*len(indices[pop])+1):
         output[pop]+=' '+str(i)
-        for mut in muts:
+        for mut in mutations:
             mut_count[(mut,pop,i)]=0
     output[pop]+='\n'
 
@@ -138,7 +121,7 @@ for line in infile:
                     mut_count[(this_mut,pop,count[pop])]+=1
 
 for pop in allpops:
-    for mut in muts:
+    for mut in mutations:
         output[pop]+=mut[0]+'_'+mut[1]
         for i in range(1,2*len(indices[pop])+1):
             output[pop]+=' '+str(mut_count[(mut,pop,i)])
