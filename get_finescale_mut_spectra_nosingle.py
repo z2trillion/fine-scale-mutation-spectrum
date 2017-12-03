@@ -86,7 +86,7 @@ for pop in allpops:
             mut_count[(mut,pop,i)]=0
     output[pop]+='\n'
 
-for line in infile:
+for line_counter, line in enumerate(infile):
     s=line.strip('\n').split('\t')
     pos=int(s[1])
     context=refseq[pos-2:pos+1]
@@ -119,6 +119,9 @@ for line in infile:
             for pop in allpops:
                 if count[pop]>0:
                     mut_count[(this_mut,pop,count[pop])]+=1
+
+    if line_counter > 1e4:
+        break
 
 for pop in allpops:
     for mut in mutations:
