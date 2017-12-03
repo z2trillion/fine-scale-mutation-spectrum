@@ -2,33 +2,9 @@ from copy import deepcopy
 import sys
 import gzip
 from itertools import product
+from labels import populations, sample_id_to_population
 
 chrom=sys.argv[1]
-
-infile=open('data/1000genomes_phase3_sample_IDs.txt')
-lines=infile.readlines()
-infile.close()
-
-big_populs=['EAS','SAS','EUR','AMR','AFR']
-populs=dict({})
-populs['EAS']=['CHB','JPT','CHS','CDX','KHV','CHD']
-populs['EUR']=['CEU','TSI','GBR','FIN','IBS']
-populs['AFR']=['YRI','LWK','GWD','MSL','ESN','ACB','ASW']
-populs['SAS']=['GIH','PJL','BEB','STU','ITU']
-populs['AMR']=['CLM','MXL','PUR','PEL']
-group=dict({})
-allpops=[]
-for bigpop in big_populs:
-    for pop in populs[bigpop]:
-        allpops.append(pop)
-        group[pop]=bigpop
-
-pop_thisID=dict({})
-for line in lines:
-    s=line.split('\t')
-    if len(s)>3:
-        pop_thisID[s[0]]=s[2]
-
 
 with open('data/hg19_reference/chr'+chrom+'_oneline.txt') as infile:
     refseq=infile.read()
@@ -59,17 +35,17 @@ num_lineages=2*(len(s)-9)
 
 output='Mut_type'
 for i in range(9,len(s)):
-    output+=' '+pop_thisID[s[i]]
+    output+=' '+sample_id_to_population[s[i]]
 output+='\n'
 
 popul=dict({})
 indices=dict({})
 
-for pop in allpops:
+for pop in populations:
     indices[pop]=[]
 
 for i in range(9,len(s)):
-    popul[i]=pop_thisID[s[i]]
+    popul[i]=sample_id_to_population[s[i]]
     indices[popul[i]].append(i)
 
 count=dict({})
@@ -78,7 +54,7 @@ anc_ind=0
 
 output=dict({})
 mut_count=dict({})
-for pop in allpops:
+for pop in populations:
     output[pop]='Mut'
     for i in range(1,2*len(indices[pop])+1):
         output[pop]+=' '+str(i)
@@ -108,7 +84,7 @@ for line_counter, line in enumerate(infile):
                 count_der=num_lineages-count_der
             i=9
             der_observed=0
-            for pop in allpops:
+            for pop in populations:
                 count[pop]=0
             while i<len(s) and der_observed<count_der:
                 for j in [0,2]:
@@ -116,14 +92,14 @@ for line_counter, line in enumerate(infile):
                         count[popul[i]]+=1
                         der_observed+=1
                 i+=1
-            for pop in allpops:
+            for pop in populations:
                 if count[pop]>0:
                     mut_count[(this_mut,pop,count[pop])]+=1
 
     if line_counter > 1e4:
         break
 
-for pop in allpops:
+for pop in populations:
     for mut in mutations:
         output[pop]+=mut[0]+'_'+mut[1]
         for i in range(1,2*len(indices[pop])+1):
