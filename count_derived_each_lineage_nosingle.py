@@ -28,34 +28,19 @@ print 'opening file'
 infile=gzip.open('data/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
 print 'file open'
 
-line=infile.readline()
-while not line.startswith('#CHROM'):
-    line=infile.readline()
-
+for line in infile:
+    if line.startswith('#CHROM'):
+        break
 print 'fast forwarded through file'
-s=line.strip('\n').split('\t')
-n_lineages=2*(len(s)-9)
+
+sample_ids = line.split()[9:]
+n_lineages = 2 * len(sample_ids)
 
 mutation_counts = {
     (mutation, haplotype_index): 0
     for haplotype_index in range(n_lineages)
     for mutation in mutations
 }
-
-
-output='Mut_type'
-for i in range(9,len(s)):
-    output+=' '+sample_id_to_population[s[i]]
-output+='\n'
-
-popul=dict({})
-
-
-indices = {group: [] for group in groups}
-
-for i in range(9,len(s)):
-    popul[i]=sample_id_to_population[s[i]]
-    indices[population_to_group[popul[i]]].append(i)
 
 anc_lines.pop(0)
 anc_ind=0
@@ -68,46 +53,97 @@ while anc_ind<len(anc_lines):
         anc_lines.pop(anc_ind)
 anc_ind=0
 
+class BadDataQualityError(Exception):
+    pass
+
+def parse_line(line):
+    (
+        chromosome_number,
+        position,
+        _,  # SNP id
+        reference_allele,
+        alternate_allele,
+        _,  # quality score,
+        filter_result,
+        info,
+        _,  # format (what ever this is???)
+        haplotypes
+    ) = line.split(None, 9)
+
+    assert chrom == chromosome_number
+    if (
+        reference_allele not in list(bases) or
+        alternate_allele not in list(bases) or
+        filter_result != 'PASS'
+    ):
+        raise BadDataQualityError
+
+    position = int(position)
+    alleles = haplotypes[::2]  # remove '\t' and '|' separators
+    derived_count = int(info.split(';')[0].split('=')[-1])
+
+    return reference_allele, alternate_allele, position, derived_count, alleles
+
 for counter, line in enumerate(infile):
-    s=line.strip('\n').split('\t')
-    pos=int(s[1])
-    context=refseq[pos-2:pos+1]
-    if len(s[3]+s[4]+s[3]+s[4])==4 and s[6]=='PASS' and s[3] in 'ACGT' and s[3] in 'ACGT' and s[4] in 'ACGT' and s[4] in 'ACGT' and not 'N' in context:
-        while anc_ind<len(anc_lines)-1 and int(anc_lines[anc_ind][0])<pos:
+    try:
+        (
+            reference_allele,
+            alternate_allele,
+            position,
+            derived_count,
+            alleles
+        ) = parse_line(line)
+    except BadDataQualityError:
+        continue
+
+    context = refseq[position - 2 : position + 1]
+
+    if 'N' not in context:
+        while anc_ind<len(anc_lines)-1 and int(anc_lines[anc_ind][0])<position:
             anc_ind+=1
-        if int(anc_lines[anc_ind][0])==pos and s[4]==anc_lines[anc_ind][3]:
+        if (
+            int(anc_lines[anc_ind][0]) == position and
+            alternate_allele == anc_lines[anc_ind][3]
+        ):
             reverse=True
-            der_allele='0'
-            this_mut=(context[0]+s[4]+context[2],s[3])
+            derived_allele='0'
+            this_mut=(context[0]+alternate_allele+context[2],reference_allele)
         else:
             reverse=False
-            der_allele='1'
-            this_mut=(context,s[4])
-        s2=s[7].split(';')
-        count_der=int(s2[0][3:])
-        if count_der>1 and n_lineages-count_der>1:
+            derived_allele='1'
+            this_mut=(context,alternate_allele)
+
+        if derived_count>1 and n_lineages-derived_count>1:
             if reverse:
-                count_der=n_lineages-count_der
+                derived_count=n_lineages-derived_count
             i=9
             der_observed=0
-            while i<len(s) and der_observed<count_der:
-                for j in [0,2]:
-                    if s[i][j]==der_allele:
-                        mutation_counts[(this_mut,2*(i-9)+j/2)]+=1
-                        der_observed+=1
-                i+=1
+
+            for i, allele in enumerate(alleles):
+                if allele == derived_allele:
+                    mutation_counts[(this_mut, i)] += 1
+                    der_observed += 1
+            assert der_observed == derived_count
 
     if counter > 100:
         break
 
-for mut in mutations:
-    output+=mut[0]+'_'+mut[1]
-    for i in range(n_lineages):
-        output+=' '+str(mutation_counts[(mut,i)])
+def write_output(mutation_counts):
+    output='Mut_type '
+    output += ' '.join(
+        [sample_id_to_population[sample_id] for sample_id in sample_ids]
+    )
     output+='\n'
 
-outfile=open('derived_each_lineage_chr'+chrom+'_nosingle.txt','w')
-outfile.write(output)
-outfile.close()
+    for mut in mutations:
+        output+=mut[0]+'_'+mut[1]
+        for i in range(n_lineages):
+            output+=' '+str(mutation_counts[(mut,i)])
+        output+='\n'
+
+    with open('derived_each_lineage_chr'+chrom+'_nosingle.txt','w') as outfile:
+        outfile.write(output)
+
+write_output(mutation_counts)
 
 print 'finished chrom ',chrom
