@@ -17,7 +17,10 @@ with open('data/hg19_reference/chr'+chrom+'_oneline.txt') as infile:
 with open('data/hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt') as infile:
     infile.next()
     anc_lines = [line.split() for line in infile if 'SNP' in line]
-anc_ind=0
+
+chimp_alleles = {}
+for position, _, _, chimp_allele in anc_lines:
+    chimp_alleles[int(position)] = chimp_allele
 
 bases = 'ACGT'
 mutations=[]
@@ -75,6 +78,7 @@ def parse_line(line):
 
     return reference_allele, alternate_allele, position, derived_count, alleles
 
+anc_ind=0
 for counter, line in enumerate(infile):
     try:
         (
@@ -90,12 +94,7 @@ for counter, line in enumerate(infile):
     context = refseq[position - 2 : position + 1]
 
     if 'N' not in context:
-        while anc_ind<len(anc_lines)-1 and int(anc_lines[anc_ind][0])<position:
-            anc_ind+=1
-        if (
-            int(anc_lines[anc_ind][0]) == position and
-            alternate_allele == anc_lines[anc_ind][3]
-        ):
+        if chimp_alleles.get(position) == alternate_allele:
             reverse=True
             derived_allele='0'
             this_mut=(context[0]+alternate_allele+context[2],reference_allele)
