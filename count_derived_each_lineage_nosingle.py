@@ -1,26 +1,25 @@
 from copy import deepcopy
 import sys
 import gzip
+import json
 
-chrom=sys.argv[1]
+chrom = sys.argv[1]
 
-infile=open('1000genomes_phase3_sample_IDs.txt')
-lines=infile.readlines()
-infile.close()
+with open('data/1000genomes_phase3_sample_IDs.txt') as infile:
+    lines=infile.readlines()
 
-big_populs=['EAS','SAS','EUR','AMR','AFR']
-populs=dict({})
-populs['EAS']=['CHB','JPT','CHS','CDX','KHV','CHD']
-populs['EUR']=['CEU','TSI','GBR','FIN','IBS']
-populs['AFR']=['YRI','LWK','GWD','MSL','ESN']
-populs['SAS']=['GIH','PJL','BEB','STU','ITU']
-populs['AMR']=['CLM','MXL','PUR','PEL','ACB','ASW']
-group=dict({})
-allpops=[]
-for bigpop in big_populs:
-    for pop in populs[bigpop]:
-        allpops.append(pop)
-        group[pop]=bigpop
+group_to_populations = {
+    'EAS': ['CHB','JPT','CHS','CDX','KHV','CHD'],
+    'EUR': ['CEU','TSI','GBR','FIN','IBS'],
+    'AFR': ['YRI','LWK','GWD','MSL','ESN'],
+    'SAS': ['GIH','PJL','BEB','STU','ITU'],
+    'AMR': ['CLM','MXL','PUR','PEL','ACB','ASW'],
+}
+
+populations_to_group = {}
+for group, populations in group_to_populations.iteritems():
+    for population in populations:
+        populations_to_group[population]=group
 
 pop_thisID=dict({})
 for line in lines:
@@ -29,11 +28,11 @@ for line in lines:
         pop_thisID[s[0]]=s[2]
 
 
-infile=open('../hg19_reference/chr'+chrom+'_oneline.txt')
+infile=open('data/hg19_reference/chr'+chrom+'_oneline.txt')
 refseq=infile.read()
 infile.close()
 
-infile=open('../hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt')
+infile=open('data/hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt')
 anc_lines=infile.readlines()
 infile.close()
 
@@ -47,7 +46,7 @@ for b1 in 'ACGT':
                     muts.append((b1+b2+b3,b4))
 
 print 'opening file'
-infile=gzip.open('../phase3_1kg/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5.20130502.genotypes.vcf.gz')
+infile=gzip.open('data/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
 print 'file open'
 
 line=infile.readline()
@@ -78,7 +77,7 @@ for p in ['AMR','EUR','EAS','SAS','AFR']:
 
 for i in range(9,len(s)):
     popul[i]=pop_thisID[s[i]]
-    indices[group[popul[i]]].append(i)
+    indices[populations_to_group[popul[i]]].append(i)
 
 count=dict({})
 AF=dict({})
@@ -103,7 +102,7 @@ while anc_ind<len(anc_lines):
         anc_lines.pop(anc_ind)
 anc_ind=0
 
-for line in infile:
+for counter, line in enumerate(infile):
     s=line.strip('\n').split('\t')
     pos=int(s[1])
     context=refseq[pos-2:pos+1]
@@ -119,7 +118,7 @@ for line in infile:
             der_allele='1'
             this_mut=(context,s[4])
         s2=s[7].split(';')
-        count_der=int(s2[0][3:])        
+        count_der=int(s2[0][3:])
         if count_der>1 and num_lineages-count_der>1:
             if reverse:
                 count_der=num_lineages-count_der
@@ -132,6 +131,9 @@ for line in infile:
                         der_observed+=1
                 i+=1
 
+    if counter > 100:
+        break
+
 for mut in muts:
     output+=mut[0]+'_'+mut[1]
     for i in range(num_lineages):
@@ -143,4 +145,3 @@ outfile.write(output)
 outfile.close()
 
 print 'finished chrom ',chrom
-
