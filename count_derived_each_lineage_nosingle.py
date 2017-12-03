@@ -2,48 +2,27 @@ from copy import deepcopy
 import sys
 import gzip
 import json
+from itertools import product
+from labels import (
+    groups,
+    population_to_group,
+    sample_id_to_population,
+)
 
 chrom = sys.argv[1]
 
-with open('data/1000genomes_phase3_sample_IDs.txt') as infile:
-    lines=infile.readlines()
+with open('data/hg19_reference/chr'+chrom+'_oneline.txt') as infile:
+    refseq=infile.read()
 
-group_to_populations = {
-    'EAS': ['CHB','JPT','CHS','CDX','KHV','CHD'],
-    'EUR': ['CEU','TSI','GBR','FIN','IBS'],
-    'AFR': ['YRI','LWK','GWD','MSL','ESN'],
-    'SAS': ['GIH','PJL','BEB','STU','ITU'],
-    'AMR': ['CLM','MXL','PUR','PEL','ACB','ASW'],
-}
+with open('data/hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt') as infile:
+    anc_lines=infile.readlines()
 
-populations_to_group = {}
-for group, populations in group_to_populations.iteritems():
-    for population in populations:
-        populations_to_group[population]=group
-
-pop_thisID=dict({})
-for line in lines:
-    s=line.split('\t')
-    if len(s)>3:
-        pop_thisID[s[0]]=s[2]
-
-
-infile=open('data/hg19_reference/chr'+chrom+'_oneline.txt')
-refseq=infile.read()
-infile.close()
-
-infile=open('data/hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt')
-anc_lines=infile.readlines()
-infile.close()
-
-
-muts=[]
-for b1 in 'ACGT':
-    for b2 in 'ACGT':
-        for b3 in 'ACGT':
-            for b4 in 'ACGT':
-                if not b2==b4:
-                    muts.append((b1+b2+b3,b4))
+bases = 'ACGT'
+mutations=[]
+for trimer in product(bases, bases, bases):
+    for base in bases:
+        if trimer[1] != base:
+            mutations.append((''.join(trimer), base))
 
 print 'opening file'
 infile=gzip.open('data/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
@@ -51,45 +30,32 @@ print 'file open'
 
 line=infile.readline()
 while not line.startswith('#CHROM'):
-#    print line
     line=infile.readline()
 
 print 'fast forwarded through file'
 s=line.strip('\n').split('\t')
-num_lineages=2*(len(s)-9)
+n_lineages=2*(len(s)-9)
 
-mut_count=dict({})
-for hap_ind in range(num_lineages):
-    for mut in muts:
-        mut_count[(mut,hap_ind)]=0
+mutation_counts = {
+    (mutation, haplotype_index): 0
+    for haplotype_index in range(n_lineages)
+    for mutation in mutations
+}
+
 
 output='Mut_type'
 for i in range(9,len(s)):
-    output+=' '+pop_thisID[s[i]]
+    output+=' '+sample_id_to_population[s[i]]
 output+='\n'
 
 popul=dict({})
 
-indices=dict({})
-for p in ['AMR','EUR','EAS','SAS','AFR']:
-    indices[p]=[]
 
+indices = {group: [] for group in groups}
 
 for i in range(9,len(s)):
-    popul[i]=pop_thisID[s[i]]
-    indices[populations_to_group[popul[i]]].append(i)
-
-count=dict({})
-AF=dict({})
-
-groups=['EUR','EAS','SAS','AMR','AFR']
-group_info_indices=[8,5,9,6,7]
-
-indcount=dict({})
-indcount['0|0']=0
-for gt in ['0|1','1|0','0/1','1/0']:
-    indcount[gt]=1
-indcount['1|1']=2
+    popul[i]=sample_id_to_population[s[i]]
+    indices[population_to_group[popul[i]]].append(i)
 
 anc_lines.pop(0)
 anc_ind=0
@@ -119,25 +85,25 @@ for counter, line in enumerate(infile):
             this_mut=(context,s[4])
         s2=s[7].split(';')
         count_der=int(s2[0][3:])
-        if count_der>1 and num_lineages-count_der>1:
+        if count_der>1 and n_lineages-count_der>1:
             if reverse:
-                count_der=num_lineages-count_der
+                count_der=n_lineages-count_der
             i=9
             der_observed=0
             while i<len(s) and der_observed<count_der:
                 for j in [0,2]:
                     if s[i][j]==der_allele:
-                        mut_count[(this_mut,2*(i-9)+j/2)]+=1
+                        mutation_counts[(this_mut,2*(i-9)+j/2)]+=1
                         der_observed+=1
                 i+=1
 
     if counter > 100:
         break
 
-for mut in muts:
+for mut in mutations:
     output+=mut[0]+'_'+mut[1]
-    for i in range(num_lineages):
-        output+=' '+str(mut_count[(mut,i)])
+    for i in range(n_lineages):
+        output+=' '+str(mutation_counts[(mut,i)])
     output+='\n'
 
 outfile=open('derived_each_lineage_chr'+chrom+'_nosingle.txt','w')
