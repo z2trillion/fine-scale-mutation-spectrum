@@ -15,7 +15,9 @@ with open('data/hg19_reference/chr'+chrom+'_oneline.txt') as infile:
     refseq=infile.read()
 
 with open('data/hg19_chimp_align/human_chimp_diffs_chr'+chrom+'.txt') as infile:
-    anc_lines=infile.readlines()
+    infile.next()
+    anc_lines = [line.split() for line in infile if 'SNP' in line]
+anc_ind=0
 
 bases = 'ACGT'
 mutations=[]
@@ -41,17 +43,6 @@ mutation_counts = {
     for haplotype_index in range(n_lineages)
     for mutation in mutations
 }
-
-anc_lines.pop(0)
-anc_ind=0
-while anc_ind<len(anc_lines):
-    s=anc_lines[anc_ind].strip('\n').split(' ')
-    if s[1]=='SNP':
-        anc_lines[anc_ind]=deepcopy(s)
-        anc_ind+=1
-    else:
-        anc_lines.pop(anc_ind)
-anc_ind=0
 
 class BadDataQualityError(Exception):
     pass
