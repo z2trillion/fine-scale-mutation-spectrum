@@ -1,9 +1,7 @@
-from copy import deepcopy
 import sys
 import gzip
-from itertools import product
-from labels import populations, sample_id_to_population
 from mutations import mutations, bases
+from labels import sample_id_to_population, populations
 from common import reference_sequence, human_chimp_differences
 
 chrom=sys.argv[1]
@@ -85,7 +83,7 @@ for line_counter, line in enumerate(infile):
             for pop in populations:
                 if count[pop]>0:
                     mut_count[(this_mut,pop,count[pop])]+=1
-
+    print line_counter
     if line_counter > 1e4:
         break
 
