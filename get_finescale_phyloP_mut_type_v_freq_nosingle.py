@@ -50,10 +50,6 @@ def get_finescale(dataset, chrom):
 
     print len(conserved), conserved[:10]
 
-    infile=open('data/1000genomes_phase3_sample_IDs.txt')
-    lines=infile.readlines()
-    infile.close()
-
     infile, line = open_infile(chrom)
     s=line.strip('\n').split('\t')
     num_lineages=2*(len(s)-9)
@@ -65,8 +61,6 @@ def get_finescale(dataset, chrom):
     indices = get_column_indices(s)
     popul = get_column_index_to_population(s)
     mut_count = initialize_mut_count(indices)
-
-    AF=dict({})
 
     conserved_ind=0
     anc_ind=0

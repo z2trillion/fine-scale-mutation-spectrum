@@ -31,7 +31,6 @@ def get_finescale(chrom):
             output[pop]+=' '+str(i)
         output[pop]+='\n'
 
-
     anc_ind=0
     refseq = reference_sequence(chrom)
     anc_lines = human_chimp_differences(chrom)
