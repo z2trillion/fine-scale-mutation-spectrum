@@ -1,29 +1,21 @@
 import sys
-import gzip
+
 from mutations import mutations, bases
 from labels import sample_id_to_population, populations
 from common import reference_sequence, human_chimp_differences
 
-from get_finescale_phyloP_mut_type_v_freq_nosingle import (
+from common import (
     write_output,
     get_column_indices,
     get_column_index_to_population,
     initialize_mut_count,
+    open_infile,
 )
 
-def my_function(chrom):
-    refseq = reference_sequence(chrom)
-    anc_lines = human_chimp_differences(chrom)
+def get_finescale(chrom):
+    outfile_path = 'finescale_mut_spectra/mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
 
-    print 'opening file'
-    infile=gzip.open('data/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
-    print 'file open'
-
-    line=infile.readline()
-    while not line.startswith('#CHROM'):
-        line=infile.readline()
-
-    print 'fast forwarded through file'
+    infile, line = open_infile(chrom)
     s=line.strip('\n').split('\t')
     num_lineages=2*(len(s)-9)
 
@@ -31,15 +23,18 @@ def my_function(chrom):
     popul = get_column_index_to_population(s)
     mut_count = initialize_mut_count(indices)
 
-    anc_ind=0
-
     output={}
+
     for pop in populations:
         output[pop]='Mut'
         for i in range(1,2*len(indices[pop])+1):
             output[pop]+=' '+str(i)
         output[pop]+='\n'
 
+
+    anc_ind=0
+    refseq = reference_sequence(chrom)
+    anc_lines = human_chimp_differences(chrom)
     for line_counter, line in enumerate(infile):
         s=line.strip('\n').split('\t')
         pos=int(s[1])
@@ -76,11 +71,10 @@ def my_function(chrom):
         if line_counter > 1e4:
             break
 
-    outfile_path = 'finescale_mut_spectra/mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
     write_output(output, outfile_path, indices, mut_count)
 
     print 'finished chrom ',chrom
 
 if __name__ == '__main__':
     chrom=sys.argv[1]
-    my_function(chrom)
+    get_finescale(chrom)
