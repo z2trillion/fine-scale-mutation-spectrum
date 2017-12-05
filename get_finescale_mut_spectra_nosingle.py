@@ -4,6 +4,13 @@ from mutations import mutations, bases
 from labels import sample_id_to_population, populations
 from common import reference_sequence, human_chimp_differences
 
+from get_finescale_phyloP_mut_type_v_freq_nosingle import (
+    write_output,
+    get_column_indices,
+    get_column_index_to_population,
+    initialize_mut_count,
+)
+
 def my_function(chrom):
     refseq = reference_sequence(chrom)
     anc_lines = human_chimp_differences(chrom)
@@ -20,33 +27,17 @@ def my_function(chrom):
     s=line.strip('\n').split('\t')
     num_lineages=2*(len(s)-9)
 
-    output='Mut_type'
-    for i in range(9,len(s)):
-        output+=' '+sample_id_to_population[s[i]]
-    output+='\n'
-
-    popul = {}
-    indices = {}
-
-    for pop in populations:
-        indices[pop]=[]
-
-    for i in range(9,len(s)):
-        popul[i]=sample_id_to_population[s[i]]
-        indices[popul[i]].append(i)
-
-    count = {}
+    indices = get_column_indices(s)
+    popul = get_column_index_to_population(s)
+    mut_count = initialize_mut_count(indices)
 
     anc_ind=0
 
-    output=dict({})
-    mut_count=dict({})
+    output={}
     for pop in populations:
         output[pop]='Mut'
         for i in range(1,2*len(indices[pop])+1):
             output[pop]+=' '+str(i)
-            for mut in mutations:
-                mut_count[(mut,pop,i)]=0
         output[pop]+='\n'
 
     for line_counter, line in enumerate(infile):
@@ -71,8 +62,7 @@ def my_function(chrom):
                     count_der=num_lineages-count_der
                 i=9
                 der_observed=0
-                for pop in populations:
-                    count[pop]=0
+                count = {population: 0 for population in populations}
                 while i<len(s) and der_observed<count_der:
                     for j in [0,2]:
                         if s[i][j]==der_allele:
@@ -86,15 +76,8 @@ def my_function(chrom):
         if line_counter > 1e4:
             break
 
-    for pop in populations:
-        for mut in mutations:
-            output[pop]+=mut[0]+'_'+mut[1]
-            for i in range(1,2*len(indices[pop])+1):
-                output[pop]+=' '+str(mut_count[(mut,pop,i)])
-            output[pop]+='\n'
-        outfile=open('finescale_mut_spectra/mut_type_v_allele_freq_'+pop+'_chr'+chrom+'_nosingle.txt','w')
-        outfile.write(output[pop])
-        outfile.close()
+    outfile_path = 'finescale_mut_spectra/mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
+    write_output(output, outfile_path, indices, mut_count)
 
     print 'finished chrom ',chrom
 

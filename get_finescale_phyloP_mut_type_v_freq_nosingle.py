@@ -49,12 +49,6 @@ def get_finescale(dataset, chrom):
     refseq = reference_sequence(chrom)
     anc_lines = human_chimp_differences(chrom)
 
-    mut_count = {}
-    for pop in populations:
-        for mut in mutations:
-            for i in range(250):
-                mut_count[(mut,pop,i)]=0
-
     print 'opening file'
     infile=gzip.open('data/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
     print 'file open'
@@ -70,15 +64,9 @@ def get_finescale(dataset, chrom):
     for bigpop in populations:
         output[bigpop]='Ref Alt '
 
-    popul=dict({})
-
-    indices=dict({})
-    for p in populations:
-        indices[p]=[]
-
-    for i in range(9,len(s)):
-        popul[i]=sample_id_to_population[s[i]]
-        indices[popul[i]].append(i)
+    indices = get_column_indices(s)
+    popul = get_column_index_to_population(s)
+    mut_count = initialize_mut_count(indices)
 
     count = {}
     AF=dict({})
@@ -126,6 +114,36 @@ def get_finescale(dataset, chrom):
         if line_counter > 1e4:
             break
 
+    write_output(output, outfile_path, indices, mut_count)
+
+    print 'finished chrom ',chrom
+
+def get_column_indices(column_labels):
+    population_to_column_indices = {population: [] for population in populations}
+
+    sample_ids = column_labels[9:]
+    for i, sample_id in enumerate(sample_ids):
+        population_to_column_indices[sample_id_to_population[sample_id]].append(i + 9)
+
+    return population_to_column_indices
+
+def get_column_index_to_population(column_labels):
+    sample_ids = column_labels[9:]
+    return {
+        i + 9 : sample_id_to_population[sample_id]
+        for i, sample_id in enumerate(sample_ids)
+    }
+
+def initialize_mut_count(population_to_column_indices):
+    mut_count = {}
+    for pop in populations:
+        for mut in mutations:
+            for i in range(1,2*len(population_to_column_indices[pop])+1):
+                mut_count[(mut,pop,i)]=0
+    return mut_count
+
+
+def write_output(output, outfile_path, indices, mut_count):
     for pop in populations:
         for mut in mutations:
             output[pop]+=mut[0]+'_'+mut[1]
@@ -135,8 +153,6 @@ def get_finescale(dataset, chrom):
         outfile=open(outfile_path %  pop,'w')
         outfile.write(output[pop])
         outfile.close()
-
-    print 'finished chrom ',chrom
 
 if __name__ == '__main__':
     chrom=sys.argv[1]
