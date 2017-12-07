@@ -68,5 +68,5 @@ def get_finescale(chrom, output):
 
 if __name__ == '__main__':
     chrom=sys.argv[1]
-    output={populaltion: 'Mut\n' for population in populations}
+    output={population: 'Mut\n' for population in populations}
     get_finescale(chrom, output)

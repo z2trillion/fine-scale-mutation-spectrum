@@ -10,6 +10,7 @@ from common import (
     get_column_index_to_population,
     initialize_mut_count,
     open_infile,
+    get_conserved,
 )
 
 def get_finescale(dataset, chrom, output):
@@ -22,33 +23,7 @@ def get_finescale(dataset, chrom, output):
     else:
         raise ValueError
 
-    infile=open(infile_path)
-    lines=infile.readlines()
-    infile.close()
-
-    ind=0
-    s=lines[ind].split('\t')
-    while not s[1]=='chr'+chrom:
-        ind+=1
-        s=lines[ind].split('\t')
-
-    conserved=[(int(s[2]),int(s[3]))]
-    ind+=1
-    s=lines[ind].split('\t')
-
-    print ind, len(lines),s
-    while ind<len(lines)-1 and s[1]== 'chr'+chrom:
-        if int(s[2])==conserved[-1][-1]+1:
-            new_tup=(conserved[-1][0],int(s[3]))
-            conserved.pop()
-            conserved.append(new_tup)
-        else:
-            conserved.append((int(s[2]),int(s[3])))
-        ind+=1
-        line=lines[ind]
-        s=line.strip('\n').split('\t')
-
-    print len(conserved), conserved[:10]
+    conserved = get_conserved(infile_path, chrom)
 
     infile, line = open_infile(chrom)
     s=line.strip('\n').split('\t')
@@ -106,5 +81,5 @@ def get_finescale(dataset, chrom, output):
 
 if __name__ == '__main__':
     chrom=sys.argv[1]
-    output = {'Ref Alt \n' for population in populations}
+    output = {population: 'Ref Alt \n' for population in populations}
     get_finescale('phastcons', chrom, output)

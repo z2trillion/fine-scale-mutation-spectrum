@@ -1,4 +1,5 @@
-Ref Alt AAA_C
+Ref Alt 
+AAA_C
 AAA_G
 AAA_T
 AAC_C
