@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg')  # This prevents the plotting engine from starting up.
 from matplotlib import pyplot as plt
 from matplotlib.mlab import PCA
 
@@ -40,7 +40,7 @@ pops=dict({})
 pops['EUR']=['CEU','GBR','FIN','IBS','TSI']
 pops['SAS']=['GIH','ITU','PJL','BEB','STU']
 pops['EAS']=['CHB','CHS','JPT','KHV','CDX']
-pops['AFR']=['YRI','MSL','LWK','ESN','GWD'] 
+pops['AFR']=['YRI','MSL','LWK','ESN','GWD']
 pops['AMR']=['CLM','MXL','PUR','PEL','ACB','ASW']
 
 longname=dict({})
@@ -71,7 +71,7 @@ for i in range(1,len(s)):
     pop_this_index[i]=s[i]
     indices[s[i]].append(i-1)
     indices[bigpop[s[i]]].append(i-1)
-        
+
 mut_counts=np.zeros((2*(len(s)-1),len(lines)-1))
 print len(mut_counts),len(mut_counts[0])
 

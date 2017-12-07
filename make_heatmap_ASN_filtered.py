@@ -1,5 +1,5 @@
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg')  # This prevents the plotting engine from starting up.
 from matplotlib import pyplot as plt
 import numpy as np
 from scipy.stats import chi2_contingency
@@ -45,7 +45,7 @@ def frequency_breakdown(pop,start_chr):
         end_ind=len(s)-2
         while 1.0*end_ind/(len(s)-2)>0.98:
 #        while float(s[end_ind])*1.0/float(s[-1])>0.98:
-            end_ind-=1        
+            end_ind-=1
         for line in lines[1:]:
             s=line.strip('\n').split(' ')
             for i in range(start_ind,end_ind):
@@ -66,7 +66,7 @@ def frequency_breakdown_phyloP(pop,start_chr):
         end_ind=len(s)-1
         while 1.0*end_ind/(len(s)-2)>0.98:
 #        while float(s[end_ind])*1.0/float(s[-1])>0.98:
-            end_ind-=1        
+            end_ind-=1
         for line in lines[1:]:
             s=line.strip('\n').split(' ')
             for i in range(start_ind,end_ind):
@@ -88,7 +88,7 @@ def frequency_breakdown_repeats(pop,start_chr):
         end_ind=len(s)-1
         while 1.0*end_ind/(len(s)-2)>0.98:
 #        while float(s[end_ind])*1.0/float(s[-1])>0.98:
-            end_ind-=1        
+            end_ind-=1
         for line in lines[1:]:
             s=line.strip('\n').split(' ')
             for i in range(start_ind,end_ind):
@@ -127,7 +127,7 @@ for pop_ind1 in range(5):
         subplot_ind+=1
         plt.title(name[pop]+' v\n'+name[refpop],fontsize=10)
 #        plt.title(pop+' v '+refpop)
-    
+
         if subplot_ind==2:
             plt.xticks((0.5,1.5,2.5,3.5),('3\'-A','C','G','T'))
             plt.yticks(tuple(ypos),tuple(ylabel))
@@ -149,4 +149,3 @@ for pop_ind1 in range(5):
     fig=plt.gcf()
     plt.savefig('ASN_heatmap_v_'+refpop+'_nosingle.pdf',format='pdf')
     plt.clf()
-
