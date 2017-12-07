@@ -5,14 +5,14 @@ from labels import sample_id_to_population, populations
 from common import (
     reference_sequence,
     human_chimp_differences,
+    write_output,
     get_column_indices,
     get_column_index_to_population,
     initialize_mut_count,
-    write_output,
     open_infile,
 )
 
-def get_finescale(dataset, chrom):
+def get_finescale(dataset, chrom, output):
     if dataset == 'phastcons':
         infile_path = 'data/phastConsElements100way.txt'
         outfile_path = 'finescale_mut_spectra/phyloP_conserved_mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
@@ -53,10 +53,6 @@ def get_finescale(dataset, chrom):
     infile, line = open_infile(chrom)
     s=line.strip('\n').split('\t')
     num_lineages=2*(len(s)-9)
-
-    output=dict({})
-    for bigpop in populations:
-        output[bigpop]='Ref Alt '
 
     indices = get_column_indices(s)
     popul = get_column_index_to_population(s)
@@ -110,4 +106,5 @@ def get_finescale(dataset, chrom):
 
 if __name__ == '__main__':
     chrom=sys.argv[1]
-    get_finescale('phastcons', chrom)
+    output = {'Ref Alt \n' for population in populations}
+    get_finescale('phastcons', chrom, output)
