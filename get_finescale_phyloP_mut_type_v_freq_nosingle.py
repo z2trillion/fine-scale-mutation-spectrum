@@ -13,18 +13,7 @@ from common import (
     get_conserved,
 )
 
-def get_finescale(dataset, chrom, output):
-    if dataset == 'phastcons':
-        infile_path = 'data/phastConsElements100way.txt'
-        outfile_path = 'finescale_mut_spectra/phyloP_conserved_mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
-    elif dataset == 'nestedrepeats':
-        infile_path = 'data/nestedRepeats.txt'
-        outfile_path = 'finescale_mut_spectra/inrepeats_mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
-    else:
-        raise ValueError
-
-    conserved = get_conserved(infile_path, chrom)
-
+def get_finescale(outfile_path, chrom, output, conserved):
     infile, line = open_infile(chrom)
     s=line.strip('\n').split('\t')
     num_lineages=2*(len(s)-9)
@@ -82,4 +71,7 @@ def get_finescale(dataset, chrom, output):
 if __name__ == '__main__':
     chrom=sys.argv[1]
     output = {population: 'Ref Alt \n' for population in populations}
-    get_finescale('phastcons', chrom, output)
+    outfile_path = 'finescale_mut_spectra/phyloP_conserved_mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
+
+    conserved = get_conserved('data/phastConsElements100way.txt', chrom)
+    get_finescale(outfile_path, chrom, output, conserved)
