@@ -15,11 +15,11 @@ from common import (
 
 def get_finescale(outfile_path, chrom, output, conserved):
     infile, line = open_infile(chrom)
-    s=line.strip('\n').split('\t')
-    num_lineages=2*(len(s)-9)
+    column_labels = line.split()
+    n_lineages = 2 * (len(column_labels) - 9)
 
-    indices = get_column_indices(s)
-    popul = get_column_index_to_population(s)
+    indices = get_column_indices(column_labels)
+    column_index_to_population = get_column_index_to_population(column_labels)
     mut_count = initialize_mut_count(indices)
 
     conserved_ind=0
@@ -29,10 +29,12 @@ def get_finescale(outfile_path, chrom, output, conserved):
     for line_counter, line in enumerate(infile):
         s=line.strip('\n').split('\t')
         pos=int(s[1])
-        context=refseq[pos-2:pos+1]
+        context = refseq[pos-2:pos+1]
+        if 'N' in context:
+            continue
         while conserved_ind<len(conserved)-1 and pos>conserved[conserved_ind][1]:
             conserved_ind+=1
-        if pos>= conserved[conserved_ind][0] and pos<=conserved[conserved_ind][1] and len(s[3]+s[4])==2 and s[6]=='PASS' and s[3] in 'ACGT' and s[4] in 'ACGT' and not 'N' in context:
+        if pos>= conserved[conserved_ind][0] and pos<=conserved[conserved_ind][1] and len(s[3]+s[4])==2 and s[6]=='PASS' and s[3] in 'ACGT' and s[4] in 'ACGT':
             while anc_ind<len(anc_lines)-1 and int(anc_lines[anc_ind][0])<pos:
                 anc_ind+=1
             if int(anc_lines[anc_ind][0])==pos and s[4]==anc_lines[anc_ind][3]:
@@ -45,16 +47,16 @@ def get_finescale(outfile_path, chrom, output, conserved):
                 this_mut=(context,s[4])
             s2=s[7].split(';')
             count_der=int(s2[0][3:])
-            if min(count_der,num_lineages-count_der)>1:
+            if min(count_der,n_lineages-count_der)>1:
                 if reverse:
-                    count_der=num_lineages-count_der
+                    count_der=n_lineages-count_der
                 i=9
                 der_observed=0
                 count = {population: 0 for population in populations}
                 while i<len(s) and der_observed<count_der:
                     for j in [0,2]:
                         if s[i][j]==der_allele:
-                            count[popul[i]]+=1
+                            count[column_index_to_population[i]]+=1
                             der_observed+=1
                     i+=1
                 for pop in populations:
