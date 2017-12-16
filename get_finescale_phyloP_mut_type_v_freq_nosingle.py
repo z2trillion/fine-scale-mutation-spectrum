@@ -4,7 +4,7 @@ from mutations import mutations, bases
 from labels import sample_id_to_population, populations
 from common import (
     reference_sequence,
-    human_chimp_differences,
+    get_human_chimp_differences,
     write_output,
     get_column_indices,
     get_column_index_to_population,
@@ -23,9 +23,8 @@ def get_finescale(outfile_path, chrom, output, conserved):
     mut_count = initialize_mut_count(indices)
 
     conserved_ind=0
-    anc_ind=0
     refseq = reference_sequence(chrom)
-    anc_lines = human_chimp_differences(chrom)
+    human_chimp_differences = get_human_chimp_differences(chrom)
     for line_counter, line in enumerate(infile):
         s=line.strip('\n').split('\t')
         pos=int(s[1])
@@ -35,9 +34,7 @@ def get_finescale(outfile_path, chrom, output, conserved):
         while conserved_ind<len(conserved)-1 and pos>conserved[conserved_ind][1]:
             conserved_ind+=1
         if pos>= conserved[conserved_ind][0] and pos<=conserved[conserved_ind][1] and len(s[3]+s[4])==2 and s[6]=='PASS' and s[3] in 'ACGT' and s[4] in 'ACGT':
-            while anc_ind<len(anc_lines)-1 and int(anc_lines[anc_ind][0])<pos:
-                anc_ind+=1
-            if int(anc_lines[anc_ind][0])==pos and s[4]==anc_lines[anc_ind][3]:
+            if human_chimp_differences.get(pos) == s[4]:
                 reverse=True
                 der_allele='0'
                 this_mut=(context[0]+s[4]+context[2],s[3])

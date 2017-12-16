@@ -6,11 +6,19 @@ def reference_sequence(chromosome_number):
     with open('data/hg19_reference/chr'+chromosome_number+'_oneline.txt') as infile:
         return infile.read()
 
-def human_chimp_differences(chromosome_number):
+def get_human_chimp_differences(chromosome_number):
+    human_chimp_differences = {}
+
     with open('data/hg19_chimp_align/human_chimp_diffs_chr'+chromosome_number+'.txt') as infile:
         infile.next()
 
-        return [line.split() for line in infile if 'SNP' in line]
+        for line in infile:
+            if 'SNP' not in line:
+                continue
+            position, _, _, chimp_allele = line.split()
+            human_chimp_differences[int(position)] = chimp_allele
+
+    return human_chimp_differences
 
 def get_column_indices(column_labels):
     population_to_column_indices = {population: [] for population in populations}
