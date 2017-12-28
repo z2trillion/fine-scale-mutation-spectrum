@@ -3,13 +3,13 @@ from labels import sample_id_to_population, populations
 import gzip
 
 def reference_sequence(chromosome_number):
-    with open('data/hg19_reference/chr'+chromosome_number+'_oneline.txt') as infile:
+    with open('../data/hg19_reference/chr'+chromosome_number+'_oneline.txt') as infile:
         return infile.read()
 
 def get_human_chimp_differences(chromosome_number):
     human_chimp_differences = {}
 
-    with open('data/hg19_chimp_align/human_chimp_diffs_chr'+chromosome_number+'.txt') as infile:
+    with open('../data/hg19_chimp_align/human_chimp_diffs_chr'+chromosome_number+'.txt') as infile:
         infile.next()
 
         for line in infile:
@@ -58,7 +58,7 @@ def write_output(output, outfile_path, indices, mut_count):
 
 def open_infile(chrom):
     print 'opening file'
-    infile=gzip.open('data/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
+    infile=gzip.open('../data/vcfs/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
     print 'file open'
 
     line=infile.readline()

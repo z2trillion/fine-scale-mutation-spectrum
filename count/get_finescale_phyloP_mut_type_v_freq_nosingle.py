@@ -59,7 +59,7 @@ def get_finescale(outfile_path, chrom, output, conserved):
                 for pop in populations:
                     if count[pop]>0:
                         mut_count[(this_mut,pop,count[pop])]+=1
-        print line_counter
+        # print line_counter
         if line_counter > 1e4:
             break
 
@@ -70,7 +70,7 @@ def get_finescale(outfile_path, chrom, output, conserved):
 if __name__ == '__main__':
     chrom=sys.argv[1]
     output = {population: 'Ref Alt \n' for population in populations}
-    outfile_path = 'finescale_mut_spectra/phyloP_conserved_mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
+    outfile_path = '../finescale_mut_spectra/phyloP_conserved_mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
 
-    conserved = get_conserved('data/phastConsElements100way.txt', chrom)
+    conserved = get_conserved('../data/bed_files/phastConsElements100way.txt', chrom)
     get_finescale(outfile_path, chrom, output, conserved)

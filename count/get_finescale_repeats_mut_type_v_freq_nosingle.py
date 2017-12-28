@@ -6,6 +6,6 @@ from common import get_conserved
 if __name__ == '__main__':
     chrom=sys.argv[1]
     output = {population: 'Ref Alt \n' for population in populations}
-    outfile_path = 'finescale_mut_spectra/inrepeats_mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
-    conserved = get_conserved('data/nestedRepeats.txt', chrom)
+    outfile_path = '../finescale_mut_spectra/inrepeats_mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
+    conserved = get_conserved('../data/bed_files/nestedRepeats.txt', chrom)
     get_finescale(outfile_path, chrom, output, conserved)
