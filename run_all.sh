@@ -6,5 +6,5 @@ python gen_oneline_format.py
 cd ..
 
 cd count
-python process_chromosome.py;
+python process_chromosomes.py;
 cd ..
