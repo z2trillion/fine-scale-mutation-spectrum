@@ -2,6 +2,7 @@ from labels import populations
 from common import open_infile, get_conserved
 from mutation_counter import MutationCounter
 
+
 def get_finescale(mutation_counters):
 
     infile, line = open_infile(mutation_counters[0].chrom)
@@ -18,7 +19,6 @@ def get_finescale(mutation_counters):
     for mutation_counter in mutation_counters:
         mutation_counter.write_output()
 
-    print 'finished chrom ', mutation_counters[0].chrom
 
 if __name__ == '__main__':
     for chrom in range(1, 23):
@@ -44,3 +44,5 @@ if __name__ == '__main__':
             nested_repeats_mutation_counter,
             phylop_mutation_counter,
         ])
+
+        print 'finished chrom', chrom

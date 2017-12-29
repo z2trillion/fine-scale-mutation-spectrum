@@ -62,7 +62,6 @@ class MutationCounter:
                 for pop in populations:
                     if count[pop]>0:
                         self.mut_count[(this_mut,pop,count[pop])]+=1
-        # print line_counter
 
     def write_output(self):
         write_output(self.output, self.outfile_path, self.indices, self.mut_count)

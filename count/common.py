@@ -57,15 +57,11 @@ def write_output(output, outfile_path, indices, mut_count):
         outfile.close()
 
 def open_infile(chrom):
-    print 'opening file'
     infile=gzip.open('../data/vcfs/ALL.chr'+chrom+'.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz')
-    print 'file open'
 
     line=infile.readline()
     while not line.startswith('#CHROM'):
         line=infile.readline()
-
-    print 'fast forwarded through file'
 
     return infile, line
 
@@ -84,7 +80,6 @@ def get_conserved(infile_path, chrom):
     ind+=1
     s=lines[ind].split('\t')
 
-    print ind, len(lines),s
     while ind<len(lines)-1 and s[1]== 'chr'+chrom:
         if int(s[2])==conserved[-1][-1]+1:
             new_tup=(conserved[-1][0],int(s[3]))
@@ -96,5 +91,4 @@ def get_conserved(infile_path, chrom):
         line=lines[ind]
         s=line.strip('\n').split('\t')
 
-    print len(conserved), conserved[:10]
     return conserved
