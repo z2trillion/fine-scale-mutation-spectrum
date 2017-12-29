@@ -23,7 +23,6 @@ for (b2,d) in [('A','T'),('A','C'),('A','G'),('C','T'),('C','G'),('C','A')]:
             ylabel.append(b2+r'$\to$'+d+r'  '+b1)
         else:
             ylabel.append(b1)
-#        ylabel.append('5\'-'+b1+b2+r'$\to$'+d)
         for b3 in 'ACGT':
             mut_index[(b1+b2+b3,d)]=(row,col)
             inv_mut_index[(row,col)]=b1+b2+b3+'_'+d
@@ -34,17 +33,14 @@ for (b2,d) in [('A','T'),('A','C'),('A','G'),('C','T'),('C','G'),('C','A')]:
 def frequency_breakdown(pop,start_chr):
     count_array=np.zeros((row,col))
     for chrom in range(start_chr,23):
-        infile=open('finescale_mut_spectra/mut_type_v_allele_freq_'+pop+'_chr'+str(chrom)+'.txt')
+        infile=open('../finescale_mut_spectra/mut_type_v_allele_freq_'+pop+'_chr'+str(chrom)+'_nosingle.txt')
         lines=infile.readlines()
         infile.close()
 
         s=lines[0].strip('\n').split(' ')
         start_ind=2
-#        while float(s[start_ind])<0.01:
-#            start_ind+=1
         end_ind=len(s)-2
         while 1.0*end_ind/(len(s)-2)>0.98:
-#        while float(s[end_ind])*1.0/float(s[-1])>0.98:
             end_ind-=1
         for line in lines[1:]:
             s=line.strip('\n').split(' ')
@@ -55,17 +51,14 @@ def frequency_breakdown(pop,start_chr):
 def frequency_breakdown_phyloP(pop,start_chr):
     count_array=np.zeros((row,col))
     for chrom in range(start_chr,23):
-        infile=open('finescale_mut_spectra/phyloP_conserved_mut_type_v_allele_freq_'+pop+'_chr'+str(chrom)+'.txt')
+        infile=open('../finescale_mut_spectra/phyloP_conserved_mut_type_v_allele_freq_'+pop+'_chr'+str(chrom)+'_nosingle.txt')
         lines=infile.readlines()
         infile.close()
 
         s=lines[0].strip('\n').split(' ')
         start_ind=2
-#        while float(s[start_ind])<0.01:
-#            start_ind+=1
         end_ind=len(s)-1
         while 1.0*end_ind/(len(s)-2)>0.98:
-#        while float(s[end_ind])*1.0/float(s[-1])>0.98:
             end_ind-=1
         for line in lines[1:]:
             s=line.strip('\n').split(' ')
@@ -73,21 +66,17 @@ def frequency_breakdown_phyloP(pop,start_chr):
                 count_array[mut_index[(s[0][:3],s[0][4])]]+=int(s[i])
     return count_array
 
-
 def frequency_breakdown_repeats(pop,start_chr):
     count_array=np.zeros((row,col))
     for chrom in range(start_chr,23):
-        infile=open('finescale_mut_spectra/inrepeats_mut_type_v_allele_freq_'+pop+'_chr'+str(chrom)+'.txt')
+        infile=open('../finescale_mut_spectra/inrepeats_mut_type_v_allele_freq_'+pop+'_chr'+str(chrom)+'_nosingle.txt')
         lines=infile.readlines()
         infile.close()
 
         s=lines[0].strip('\n').split(' ')
         start_ind=2
-#        while float(s[start_ind])<0.01:
-#            start_ind+=1
         end_ind=len(s)-1
         while 1.0*end_ind/(len(s)-2)>0.98:
-#        while float(s[end_ind])*1.0/float(s[-1])>0.98:
             end_ind-=1
         for line in lines[1:]:
             s=line.strip('\n').split(' ')
