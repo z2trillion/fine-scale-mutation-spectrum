@@ -8,3 +8,7 @@ cd ..
 cd count
 python process_chromosomes.py;
 cd ..
+
+cd plot
+python make_heatmap_ASN_filtered.py
+cd ..
