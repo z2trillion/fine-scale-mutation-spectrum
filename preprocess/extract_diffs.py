@@ -1,3 +1,4 @@
+import os
 import gzip
 
 def extract_diffs(chrom):
@@ -75,5 +76,8 @@ def extract_diffs(chrom):
 
 if __name__ == '__main__':
     for chrom in range(1, 23):
-        extract_diffs(chrom)
-        print 'extracted diffs for chromosome %i' % chrom
+        if os.path.isfile('../data/hg19_chimp_align/human_chimp_diffs_chr%i.txt' % chrom):
+            print 'existing human_chimp_diffs file found for chromosome %i' % chrom
+        else:
+            extract_diffs(chrom)
+            print 'extracted diffs for chromosome %i' % chrom

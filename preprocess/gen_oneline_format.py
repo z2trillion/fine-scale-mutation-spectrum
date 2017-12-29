@@ -1,3 +1,4 @@
+import os
 # import gzip
 
 def gen_oneline(chrom):
@@ -16,5 +17,8 @@ def gen_oneline(chrom):
 
 if __name__ == '__main__':
     for chrom in range(1, 23):
-        gen_oneline(chrom)
-        print 'generated oneline file for chromosome %i' % chrom
+        if os.path.isfile('../data/hg19_reference/chr%i_oneline.txt' % chrom):
+            print 'existing oneline file found for chromosome %i' % chrom
+        else:
+            gen_oneline(chrom)
+            print 'generated oneline file for chromosome %i' % chrom
