@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')  # This prevents the plotting engine from starting up.
+matplotlib.use('Agg')  # Prevent the plotting engine from starting up
 from matplotlib import pyplot as plt
 from matplotlib.mlab import PCA
 
@@ -30,7 +30,7 @@ for (b2,d) in [('A','T'),('A','C'),('A','G'),('C','T'),('C','G'),('C','A')]:
             col+=1
         row+=1
 
-infile=open('../phase3_mutations/derived_each_lineage_chr22_nosingle.txt')
+infile=open('../finescale_mut_spectra/derived_each_lineage_chr22_nosingle.txt')
 lines=infile.readlines()
 s=lines[0].strip('\n').split(' ')
 
@@ -77,7 +77,7 @@ print len(mut_counts),len(mut_counts[0])
 
 mut_list=[]
 for chrom in range(1,23):
-    infile=open('../phase3_mutations/derived_each_lineage_chr'+str(chrom)+'_nosingle.txt')
+    infile=open('../finescale_mut_spectra/derived_each_lineage_chr'+str(chrom)+'_nosingle.txt')
     lines=infile.readlines()
     infile.close()
 
