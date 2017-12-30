@@ -16,7 +16,7 @@ def gen_oneline(chrom):
     outfile.close()
 
 if __name__ == '__main__':
-    for chrom in range(1, 23):
+    for chrom in range(1, 23) + ['X']:
         if os.path.isfile('../data/hg19_reference/chr%i_oneline.txt' % chrom):
             print 'existing oneline file found for chromosome %i' % chrom
         else:

@@ -7,13 +7,14 @@ from labels import sample_id_to_population, populations
 
 def get_chromosomes_from_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--chromosomes', type=int, nargs='+',
+    parser.add_argument('-c', '--chromosomes', type=str, nargs='+',
                         default=range(1, 23))
 
     chromosomes = parser.parse_args(sys.argv[1:]).chromosomes
+
+    valid_chromosomes = ['X'] + [str(i) for i in range(1, 23)]
     for chrom in chromosomes:
-        assert 1 <= chrom and chrom <= 22, ('Chromosome %i is unlikely to exist'
-                                            % chrom)
+        assert chrom in valid_chromosomes
     return chromosomes
 
 

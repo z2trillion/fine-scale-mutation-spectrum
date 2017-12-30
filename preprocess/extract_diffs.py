@@ -75,7 +75,7 @@ def extract_diffs(chrom):
     outfile.close()
 
 if __name__ == '__main__':
-    for chrom in range(1, 23):
+    for chrom in range(1, 23) + ['X']:
         if os.path.isfile('../data/hg19_chimp_align/human_chimp_diffs_chr%i.txt' % chrom):
             print 'existing human_chimp_diffs file found for chromosome %i' % chrom
         else:
