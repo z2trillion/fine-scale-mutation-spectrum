@@ -38,7 +38,13 @@ pops['EAS']=['CHB','CHS','JPT','KHV','CDX']
 pops['AFR']=['YRI','MSL','LWK','ESN','GWD']
 pops['AMR']=['CLM','MXL','PUR','PEL','ACB','ASW']
 
-longname=dict({})
+longname = {
+    'AFR': 'African',
+    'EUR': 'European',
+    'SAS': 'South Asian',
+    'EAS': 'East Asian',
+    'AMR': 'North/South American',
+}
 for tup in zip(pops['EUR'],['CEU','British','Finnish','Spanish','Italian']):
     longname[tup[0]]=tup[1]
 for tup in zip(pops['SAS'],['Gujarati','Telugu','Punjabi','Bengali','Tamil']):
@@ -55,25 +61,19 @@ for group in groups:
     for pop in pops[group]:
         bigpop[pop]=group
 
-def make_plots(chromosomes, groups_asdfasdf):
+def make_plots(chromosomes, groups, group_labels):
     infile=open('../finescale_mut_spectra/derived_each_lineage_chr%i_nosingle.txt' % chromosomes[0])
     lines=infile.readlines()
     s=lines[0].strip('\n').split(' ')
 
-    indices=dict({})
-    for group in groups:
-        indices[group]=[]
-        for pop in pops[group]:
-            indices[pop]=[]
-
-    pop_this_index=dict({})
+    indices = {}
     for i in range(1,len(s)):
-        pop_this_index[i]=s[i]
-        indices[s[i]].append(i-1)
-        indices[bigpop[s[i]]].append(i-1)
+        try:
+            indices[s[i]].append(i-1)
+        except KeyError:
+            indices[s[i]] = [i - 1]
 
     mut_counts=np.zeros((2*(len(s)-1),len(lines)-1))
-    print len(mut_counts),len(mut_counts[0])
 
     mut_list=[]
     for chrom in chromosomes:
@@ -99,40 +99,38 @@ def make_plots(chromosomes, groups_asdfasdf):
             averaged_mut_counts[-1].append(0.5*(mut_counts[2*j][i]+mut_counts[2*j+1][i]))
     mut_counts=np.array(averaged_mut_counts)
 
-
-
+    group_mut_counts = []
     for group in groups:
-        print group
-        group_mut_counts=[]
-        for i in indices[group]:
-            group_mut_counts.append(mut_counts[i])
-        group_mut_counts=np.array(group_mut_counts)
-        myPCA=PCA(group_mut_counts)
+        for population in group:
+            for i in indices[population]:
+                group_mut_counts.append(mut_counts[i])
 
-        colors=['blue','green','red','purple','black','orange']
-        for i in range(len(pops[group])):
-            x,y=[],[]
-            for ind in indices[pops[group][i]]:
+    group_mut_counts=np.array(group_mut_counts)
+    myPCA=PCA(group_mut_counts)
+
+    colors=['blue','green','red','purple','black','orange']
+    for group, group_label, color in zip(groups, group_labels, colors):
+        x,y=[],[]
+        for population in group:
+            for ind in indices[population]:
                 this_point=myPCA.project(mut_counts[ind])
                 x.append(this_point[0])
                 y.append(this_point[1])
-            plt.scatter(x,y,color=colors[i],label=longname[pops[group][i]])
-        plt.legend(loc='lower left',ncol=2,prop={'size':8})
-        plt.xticks(())
-        plt.yticks(())
-        plt.xlabel('PC1 ('+str(int(100*myPCA.fracs[0]))+'% variance explained)')
-        plt.ylabel('PC2 ('+str(int(100*myPCA.fracs[1]))+'% variance explained)')
-        fig=plt.gcf()
-        fig.set_size_inches((4.5,3.5))
-        plt.savefig(group+'_mut_PCA_1kg_nosingle_altlegend.pdf')
-        plt.clf()
+        plt.scatter(x,y,color=color,label=longname[group_label])
+    plt.legend(loc='lower left',ncol=2,prop={'size':8})
+    plt.xticks(())
+    plt.yticks(())
+    plt.xlabel('PC1 ('+str(int(100*myPCA.fracs[0]))+'% variance explained)')
+    plt.ylabel('PC2 ('+str(int(100*myPCA.fracs[1]))+'% variance explained)')
+    fig=plt.gcf()
+    fig.set_size_inches((4.5,3.5))
+    plt.savefig('_'.join(group_labels) + '_mut_PCA_1kg_nosingle_altlegend.pdf')
+    plt.clf()
 
 def Group(group):
-    if group in bigpop:
-        return [group]
-    try:
-        return pops[group]
-    except KeyError:
+    if group in bigpop or group in pops:
+        return group
+    else:
         raise ValueError
 
 
@@ -151,4 +149,11 @@ if __name__ == '__main__':
         assert 1 <= chrom and chrom <= 22, ('Chromosome %i is unlikely to exist'
                                             % chrom)
 
-    make_plots(chromosomes, args.groups)
+    groups = [pops[group if group in pops else [group]]
+              for group in args.groups]
+    group_labels = args.groups
+    if len(groups) == 1:
+        group_labels = groups[0]
+        groups = [[population] for population in groups[0]]
+
+    make_plots(chromosomes, groups, group_labels)
