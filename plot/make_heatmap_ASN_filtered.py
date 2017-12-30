@@ -1,3 +1,4 @@
+import sys
 import matplotlib
 matplotlib.use('Agg')  # This prevents the plotting engine from starting up.
 from matplotlib import pyplot as plt
@@ -32,12 +33,12 @@ for (b2,d) in [('A','T'),('A','C'),('A','G'),('C','T'),('C','G'),('C','A')]:
 
 def frequency_breakdown(pop,start_chr):
     count_array=np.zeros((row,col))
-    for chrom in range(start_chr,23):
+    for chrom in range(start_chr,5):
         infile=open('../finescale_mut_spectra/mut_type_v_allele_freq_'+pop+'_chr'+str(chrom)+'_nosingle.txt')
         lines=infile.readlines()
         infile.close()
 
-        s=lines[0].strip('\n').split(' ')
+        s=lines[1].strip('\n').split(' ')
         start_ind=2
         end_ind=len(s)-2
         while 1.0*end_ind/(len(s)-2)>0.98:
@@ -50,7 +51,7 @@ def frequency_breakdown(pop,start_chr):
 
 def frequency_breakdown_phyloP(pop,start_chr):
     count_array=np.zeros((row,col))
-    for chrom in range(start_chr,23):
+    for chrom in range(start_chr,5):
         infile=open('../finescale_mut_spectra/phyloP_conserved_mut_type_v_allele_freq_'+pop+'_chr'+str(chrom)+'_nosingle.txt')
         lines=infile.readlines()
         infile.close()
@@ -68,7 +69,7 @@ def frequency_breakdown_phyloP(pop,start_chr):
 
 def frequency_breakdown_repeats(pop,start_chr):
     count_array=np.zeros((row,col))
-    for chrom in range(start_chr,23):
+    for chrom in range(start_chr,5):
         infile=open('../finescale_mut_spectra/inrepeats_mut_type_v_allele_freq_'+pop+'_chr'+str(chrom)+'_nosingle.txt')
         lines=infile.readlines()
         infile.close()
@@ -115,7 +116,6 @@ for pop_ind1 in range(5):
         plt.subplot(1,5,subplot_ind)
         subplot_ind+=1
         plt.title(name[pop]+' v\n'+name[refpop],fontsize=10)
-#        plt.title(pop+' v '+refpop)
 
         if subplot_ind==2:
             plt.xticks((0.5,1.5,2.5,3.5),('3\'-A','C','G','T'))
@@ -125,15 +125,10 @@ for pop_ind1 in range(5):
             plt.yticks(())
         for k in range(1,6):
             plt.axhline(y=k*4,color='black')
-#        plt.pcolor(ratio_grid)
-#        plt.pcolor(ratio_grid,vmin=0.88,vmax=1.16)
         plt.pcolor(ratio_grid,vmin=0.84,vmax=1.16,cmap='seismic')
-#        plt.tight_layout()
         if subplot_ind==5:
             plt.colorbar()
         plt.scatter(sig_x,sig_y,marker='.')
-#    plt.savefig('heatmap_'+pop+'_v_AFR.pdf',format='pdf')
-#    plt.clf()
 
     fig=plt.gcf()
     plt.savefig('ASN_heatmap_v_'+refpop+'_nosingle.pdf',format='pdf')

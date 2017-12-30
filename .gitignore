@@ -1,2 +1,4 @@
 data
 *.pyc
+finescale_mut_spectra
+*.DS_Store
