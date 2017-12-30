@@ -8,6 +8,7 @@ from labels import (
     sample_id_to_population,
 )
 from mutations import bases
+from common import get_chromosomes_from_args
 
 
 class BadDataQualityError(Exception):
@@ -142,15 +143,23 @@ def process_chromosome(chrom):
 
             update_counts(alleles, mutation_counts, derived_count, derived_allele, n_lineages, this_mut)
 
-            # TODO(mason) this is for testing only
-            if counter > 1e4:
-                break
-
     write_output(mutation_counts, sample_ids, mutations, n_lineages, chrom)
 
 
 if __name__ == '__main__':
-    for chromosome in range(1, 23):
+    import argparse
+    import sys
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--chromosomes', type=int, nargs='+',
+                        default=range(1, 23))
+
+    chromosomes = parser.parse_args(sys.argv[1:]).chromosomes
+    for chrom in chromosomes:
+        assert 1 <= chrom and chrom <= 22, ('Chromosome %i is unlikely to exist'
+                                            % chrom)
+
+    for chrom in chromosomes:
         chromosome = str(chromosome)
         process_chromosome(chromosome)
 

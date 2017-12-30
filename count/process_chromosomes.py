@@ -1,10 +1,9 @@
 from labels import populations
-from common import open_infile, get_conserved
+from common import open_infile, get_conserved, get_chromosomes_from_args
 from mutation_counter import MutationCounter
 
 
 def get_finescale(mutation_counters):
-
     infile, line = open_infile(mutation_counters[0].chrom)
     for mutation_counter in mutation_counters:
         mutation_counter.configure(line)
@@ -13,15 +12,13 @@ def get_finescale(mutation_counters):
         for mutation_counter in mutation_counters:
             mutation_counter.process_line(line)
 
-        if line_counter > 1e4:
-            break
-
     for mutation_counter in mutation_counters:
         mutation_counter.write_output()
 
 
 if __name__ == '__main__':
-    for chrom in range(1, 23):
+    chromosomes = get_chromosomes_from_args()
+    for chrom in chromosomes:
         chrom = str(chrom)
 
         output={population: 'Mut\n' for population in populations}

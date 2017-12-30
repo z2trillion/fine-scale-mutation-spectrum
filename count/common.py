@@ -1,6 +1,21 @@
+import sys
+import argparse
+import gzip
+
 from mutations import mutations, bases
 from labels import sample_id_to_population, populations
-import gzip
+
+def get_chromosomes_from_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--chromosomes', type=int, nargs='+',
+                        default=range(1, 23))
+
+    chromosomes = parser.parse_args(sys.argv[1:]).chromosomes
+    for chrom in chromosomes:
+        assert 1 <= chrom and chrom <= 22, ('Chromosome %i is unlikely to exist'
+                                            % chrom)
+    return chromosomes
+
 
 def reference_sequence(chromosome_number):
     with open('../data/hg19_reference/chr'+chromosome_number+'_oneline.txt') as infile:
