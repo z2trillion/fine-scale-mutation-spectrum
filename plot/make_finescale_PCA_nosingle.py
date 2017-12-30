@@ -126,26 +126,6 @@ def make_plots(chromosomes, groups_asdfasdf):
         fig.set_size_inches((4.5,3.5))
         plt.savefig(group+'_mut_PCA_1kg_nosingle_altlegend.pdf')
         plt.clf()
-        #
-        # PC_vector=myPCA.Wt
-        #
-        # for j in range(2):
-        #     PC_grid=np.zeros((row,col))
-        #     for i in range(len(mut_list)):
-        #         mut=mut_list[i]
-        #         PC_grid[mut_index[(mut[:3],mut[4])]]-=float(PC_vector[j][i])
-        #     plt.xticks((0.5,1.5,2.5,3.5),('3\' -A', 'C','G','T'))
-        #     plt.yticks(tuple(ypos),tuple(ylabel))
-        #     for i in [4,8,12,16,20]:
-        #         plt.axhline(y=i,color='black')
-        #     plt.pcolor(PC_grid,cmap='seismic',vmin=-0.45,vmax=0.45)
-        #     plt.colorbar()
-        #     fig=plt.gcf()
-        #     fig.set_size_inches((4,6))
-        #     plt.title('Principal Component '+str(j+1))
-        #     plt.tight_layout()
-        #     plt.savefig(group+'_mut_PC'+str(j)+'_nosingle.pdf',format='pdf')
-        #     plt.clf()
 
 def Group(group):
     if group in bigpop:
