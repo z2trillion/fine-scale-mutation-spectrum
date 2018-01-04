@@ -57,7 +57,7 @@ def frequency_breakdown(path, chromosomes, frequency_range):
                 count_array[mut_index[(s[0][:3],s[0][4])]]+=int(s[i])
     return count_array
 
-def heatmap(chromosomes, population_pair, frequency_range, exclude):
+def heatmap(chromosomes, population_pair, frequency_range, exclude, p_value):
     pop_counts = {}
     num_variants = {}
 
@@ -81,13 +81,14 @@ def heatmap(chromosomes, population_pair, frequency_range, exclude):
             chi2_results=chi2_contingency(np.array([[pop_counts[pop][i][j],num_variants[pop]],[pop_counts[refpop][i][j],num_variants[refpop]]]))
             this_pval=chi2_results[1]
             ratio_grid[i][j]=pop_counts[pop][i][j]*num_variants[refpop]/(num_variants[pop]*pop_counts[refpop][i][j])
-            if this_pval<0.00001:
+            if this_pval < p_value:
                 sig_x.append(j+0.5)
                 sig_y.append(i+0.5)
 
     return ratio_grid, (sig_x, sig_y)
 
-def make_titles(chromosome_groups, population_pairs, frequency_range, exclude):
+def make_titles(chromosome_groups, population_pairs, frequency_range, exclude,
+                p_value):
     title = ''
 
     distinct_population_pairs = len(set(population_pairs)) != 1
@@ -109,6 +110,7 @@ def make_titles(chromosome_groups, population_pairs, frequency_range, exclude):
     #     title += '\nExcluding Repeats and Conserved Regions'
     if frequency_range != [0, 1]:
         title += ' %.2f <= f <= %.2f' % tuple(frequency_range)
+    title += ' p < %1.1e' % p_value
 
     column_titles = []
     for chromosomes, population_pair in product(chromosome_groups,
@@ -190,6 +192,8 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--frequency-range', type=float, nargs=2,
                         default=[0, 1])
     parser.add_argument('-e', '--exclude', action='store_true')
+    parser.add_argument('--p-value', type=float, default=1e-5)
+
     args = parser.parse_args(sys.argv[1:])
 
     chromosomes = args.chromosomes
@@ -204,9 +208,10 @@ if __name__ == '__main__':
                            args.population_pairs[1::2])
     frequency_range = args.frequency_range
     exclude = args.exclude
+    p_value = args.p_value
 
     heatmaps = [
-        heatmap(chromosomes, population_pair, frequency_range, exclude)
+        heatmap(chromosomes, population_pair, frequency_range, exclude, p_value)
         for chromosomes, population_pair in product(chromosome_groups,
                                                     population_pairs)
     ]
@@ -214,6 +219,6 @@ if __name__ == '__main__':
     ratio_grids, significant_indices = zip(*heatmaps)
 
     plot_title, column_titles = make_titles(chromosome_groups, population_pairs,
-                                            frequency_range, exclude)
+                                            frequency_range, exclude, p_value)
 
     make_plot(ratio_grids, significant_indices, plot_title, column_titles)
