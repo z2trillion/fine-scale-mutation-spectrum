@@ -1,48 +1,53 @@
 import sys
-import matplotlib
-matplotlib.use('Agg')  # This prevents the plotting engine from starting up.
-from matplotlib import pyplot as plt
+import argparse
 import numpy as np
 from scipy.stats import chi2_contingency
-import math
-
 from itertools import product
 
-comp=dict({})
-comp['A'],comp['C'],comp['G'],comp['T']='T','G','C','A'
-ypos, ylabel=[],[]
+import matplotlib
+matplotlib.use('Agg')  # This prevents the plotting engine from starting up.
+import matplotlib.pyplot as plt  # noqa E402
 
-inv_mut_index=dict({})
-mut_index=dict({})
-row, col = 0,0
+comp = {
+    'A': 'T',
+    'C': 'G',
+    'G': 'C',
+    'T': 'A',
+}
+ypos, ylabel = [], []
 
-for (b2,d) in [('A','T'),('A','C'),('A','G'),('C','T'),('C','G'),('C','A')]:
+inv_mut_index = {}
+mut_index = {}
+row, col = 0, 0
+
+for b2, d in [('A', 'T'), ('A', 'C'), ('A', 'G'),
+              ('C', 'T'), ('C', 'G'), ('C', 'A')]:
     for b1 in 'ACGT':
-        col=0
+        col = 0
         ypos.append(row+0.5)
-        if b1=='T' and b2=='C' and d=='A':
+        if b1 == 'T' and b2 == 'C' and d == 'A':
             ylabel.append('5\'-'+b1)
-        elif b1=='C':
+        elif b1 == 'C':
             ylabel.append(b2+r'$\to$'+d+r'  '+b1)
         else:
             ylabel.append(b1)
         for b3 in 'ACGT':
-            mut_index[(b1+b2+b3,d)]=(row,col)
-            inv_mut_index[(row,col)]=b1+b2+b3+'_'+d
-            mut_index[(comp[b3]+comp[b2]+comp[b1],comp[d])]=(row,col)
-            col+=1
-        row+=1
+            mut_index[(b1+b2+b3, d)] = (row, col)
+            inv_mut_index[(row, col)] = b1+b2+b3+'_'+d
+            mut_index[(comp[b3]+comp[b2]+comp[b1], comp[d])] = (row, col)
+            col += 1
+        row += 1
 
 
 def frequency_breakdown(path, chromosomes, frequency_range):
-    count_array=np.zeros((row,col))
+    count_array = np.zeros((row, col))
     for chrom in chromosomes:
-        infile=open(path % str(chrom))
-        lines=infile.readlines()
+        infile = open(path % str(chrom))
+        lines = infile.readlines()
         infile.close()
 
-        s=lines[1].strip('\n').split(' ')
-        #TODO(mason) do these better.
+        s = lines[1].strip('\n').split(' ')
+        # TODO(mason) do these better.
         start_index = 2
         while float(start_index - 2) / (len(s) - 2) < frequency_range[0]:
             start_index += 1
@@ -52,40 +57,55 @@ def frequency_breakdown(path, chromosomes, frequency_range):
             end_index -= 1
 
         for line in lines[1:]:
-            s=line.strip('\n').split(' ')
+            s = line.strip('\n').split(' ')
             for i in range(start_index, end_index):
-                count_array[mut_index[(s[0][:3],s[0][4])]]+=int(s[i])
+                count_array[mut_index[(s[0][:3], s[0][4])]] += int(s[i])
     return count_array
+
 
 def heatmap(chromosomes, population_pair, frequency_range, exclude, p_value):
     pop_counts = {}
     num_variants = {}
 
     for pop in population_pair:
-        path = '../finescale_mut_spectra/mut_type_v_allele_freq_'+pop+'_chr%s_nosingle.txt'
-        pop_counts[pop]=frequency_breakdown(path, chromosomes, frequency_range)
+        path = ('../finescale_mut_spectra/mut_type_v_allele_freq_' +
+                pop + '_chr%s_nosingle.txt')
+        pop_counts[pop] = frequency_breakdown(path, chromosomes,
+                                              frequency_range)
         if exclude:
-            repeats_path = '../finescale_mut_spectra/inrepeats_mut_type_v_allele_freq_'+pop+'_chr%s_nosingle.txt'
-            pop_counts[pop] -= frequency_breakdown(repeats_path, chromosomes, frequency_range)
+            repeats_path = ('../finescale_mut_spectra/'
+                            'inrepeats_mut_type_v_allele_freq_' +
+                            pop + '_chr%s_nosingle.txt')
+            pop_counts[pop] -= frequency_breakdown(repeats_path, chromosomes,
+                                                   frequency_range)
 
-            conserved_path = '../finescale_mut_spectra/phyloP_conserved_mut_type_v_allele_freq_'+pop+'_chr%s_nosingle.txt'
-            pop_counts[pop] -= frequency_breakdown(conserved_path, chromosomes, frequency_range)
-        num_variants[pop]=pop_counts[pop].sum()
+            conserved_path = ('../finescale_mut_spectra/'
+                              'phyloP_conserved_mut_type_v_allele_freq_' +
+                              pop + '_chr%s_nosingle.txt')
+            pop_counts[pop] -= frequency_breakdown(conserved_path, chromosomes,
+                                                   frequency_range)
+        num_variants[pop] = pop_counts[pop].sum()
 
     refpop, pop = population_pair
 
-    ratio_grid=np.zeros((row,col))
-    sig_x,sig_y=[],[]
+    ratio_grid = np.zeros((row, col))
+    sig_x, sig_y = [], []
     for i in range(row):
         for j in range(col):
-            chi2_results=chi2_contingency(np.array([[pop_counts[pop][i][j],num_variants[pop]],[pop_counts[refpop][i][j],num_variants[refpop]]]))
-            this_pval=chi2_results[1]
-            ratio_grid[i][j]=pop_counts[pop][i][j]*num_variants[refpop]/(num_variants[pop]*pop_counts[refpop][i][j])
+            _, this_pval, _, _ = chi2_contingency(
+                np.array([
+                    [pop_counts[pop][i][j], num_variants[pop]],
+                    [pop_counts[refpop][i][j], num_variants[refpop]]
+                ])
+            )
+            ratio_grid[i][j] = (pop_counts[pop][i][j] * num_variants[refpop] /
+                                (num_variants[pop] * pop_counts[refpop][i][j]))
             if this_pval < p_value:
                 sig_x.append(j+0.5)
                 sig_y.append(i+0.5)
 
     return ratio_grid, (sig_x, sig_y)
+
 
 def make_titles(chromosome_groups, population_pairs, frequency_range, exclude,
                 p_value):
@@ -104,8 +124,9 @@ def make_titles(chromosome_groups, population_pairs, frequency_range, exclude,
         elif len(chromosome_groups[0]) == 1:
             title += ' Chromosome %s' % str(chromosome_groups[0][0])
         else:
-            title += ' Chromosomes %s' % ' '.join(str(c)
-                                                  for c in chromosome_groups[0])
+            title += ' Chromosomes %s' % ' '.join(
+                str(c) for c in chromosome_groups[0]
+            )
     # if exclude:
     #     title += '\nExcluding Repeats and Conserved Regions'
     if frequency_range != [0, 1]:
@@ -125,10 +146,11 @@ def make_titles(chromosome_groups, population_pairs, frequency_range, exclude,
 
     return title, column_titles
 
+
 def make_plot(ratio_grids, significant_indices, plot_title, column_titles):
     combined_grids = np.hstack(ratio_grids)
-    r = max(1 - np.min(combined_grids), np.max(combined_grids) - 1)
-    plt.pcolor(np.hstack(ratio_grids), vmin=1 - r,vmax=1 + r, cmap='seismic')
+    r = max(1-np.min(combined_grids), np.max(combined_grids)-1)
+    plt.pcolor(np.hstack(ratio_grids), vmin=1-r, vmax=1+r, cmap='seismic')
     plt.colorbar()
 
     xtick_values = len(ratio_grids) * list('ACGT')
@@ -140,7 +162,7 @@ def make_plot(ratio_grids, significant_indices, plot_title, column_titles):
         plt.axvline(x=4 * k, color='black')
 
     for k in range(0, len(ratio_grids[0]), 4):
-        plt.axhline(y=k,color='black', linestyle='dashed')
+        plt.axhline(y=k, color='black', linestyle='dashed')
 
     top_x_axis = plt.twiny()  # Create a twin Axes sharing the yaxis, lol
     top_x_axis.set_xticks(np.arange(2, 4 * len(ratio_grids), 4))
@@ -161,15 +183,16 @@ def make_plot(ratio_grids, significant_indices, plot_title, column_titles):
     plt.title(plot_title + '\n')
 
     plt.gcf()
-    plt.savefig('heatmap.pdf',format='pdf')
+    plt.savefig('heatmap.pdf', format='pdf')
     plt.clf()
 
+
 valid_populations = [
-    'CHB','JPT','CHS','CDX','KHV','CHD',
-    'CEU','TSI','GBR','FIN','IBS',
-    'YRI','LWK','GWD','MSL','ESN', 'ACB', 'ASW',
-    'GIH','PJL','BEB','STU','ITU',
-    'CLM','MXL','PUR','PEL',
+    'CHB', 'JPT', 'CHS', 'CDX', 'KHV', 'CHD',
+    'CEU', 'TSI', 'GBR', 'FIN', 'IBS',
+    'YRI', 'LWK', 'GWD', 'MSL', 'ESN', 'ACB', 'ASW',
+    'GIH', 'PJL', 'BEB', 'STU', 'ITU',
+    'CLM', 'MXL', 'PUR', 'PEL',
 ]
 
 
@@ -180,9 +203,6 @@ def Population(population):
 
 
 if __name__ == '__main__':
-    import sys
-    import argparse
-
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--chromosomes', type=str, nargs='+',
                         default=[str(c) for c in range(1, 23)])
@@ -211,14 +231,16 @@ if __name__ == '__main__':
     p_value = args.p_value
 
     heatmaps = [
-        heatmap(chromosomes, population_pair, frequency_range, exclude, p_value)
-        for chromosomes, population_pair in product(chromosome_groups,
-                                                    population_pairs)
+        heatmap(
+            c, population_pair, frequency_range, exclude, p_value
+        ) for c, population_pair in product(chromosome_groups,
+                                            population_pairs)
     ]
 
     ratio_grids, significant_indices = zip(*heatmaps)
 
-    plot_title, column_titles = make_titles(chromosome_groups, population_pairs,
-                                            frequency_range, exclude, p_value)
+    plot_title, column_titles = make_titles(
+        chromosome_groups, population_pairs, frequency_range, exclude, p_value
+    )
 
     make_plot(ratio_grids, significant_indices, plot_title, column_titles)
