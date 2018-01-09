@@ -16,7 +16,6 @@ comp = {
 }
 ypos, ylabel = [], []
 
-inv_mut_index = {}
 mut_index = {}
 row, col = 0, 0
 
@@ -33,7 +32,6 @@ for b2, d in [('A', 'T'), ('A', 'C'), ('A', 'G'),
             ylabel.append(b1)
         for b3 in 'ACGT':
             mut_index[(b1+b2+b3, d)] = (row, col)
-            inv_mut_index[(row, col)] = b1+b2+b3+'_'+d
             mut_index[(comp[b3]+comp[b2]+comp[b1], comp[d])] = (row, col)
             col += 1
         row += 1
@@ -202,7 +200,7 @@ def Population(population):
     return population
 
 
-if __name__ == '__main__':
+def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--chromosomes', type=str, nargs='+',
                         default=[str(c) for c in range(1, 23)])
@@ -226,15 +224,20 @@ if __name__ == '__main__':
 
     population_pairs = zip(args.population_pairs[::2],
                            args.population_pairs[1::2])
-    frequency_range = args.frequency_range
-    exclude = args.exclude
-    p_value = args.p_value
+
+    return (chromosome_groups, population_pairs, args.frequency_range,
+            args.exclude, args.p_value)
+
+
+if __name__ == '__main__':
+    (chromosome_groups, population_pairs, frequency_range, exclude,
+     p_value) = parse_args()
 
     heatmaps = [
         heatmap(
-            c, population_pair, frequency_range, exclude, p_value
-        ) for c, population_pair in product(chromosome_groups,
-                                            population_pairs)
+            chromosomes, population_pair, frequency_range, exclude, p_value
+        ) for chromosomes, population_pair in product(chromosome_groups,
+                                                      population_pairs)
     ]
 
     ratio_grids, significant_indices = zip(*heatmaps)
