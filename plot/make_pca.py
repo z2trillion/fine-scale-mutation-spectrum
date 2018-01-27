@@ -149,7 +149,7 @@ if __name__ == '__main__':
         assert 1 <= chrom and chrom <= 22, ('Chromosome %i is unlikely to exist'
                                             % chrom)
 
-    groups = [pops[group if group in pops else [group]]
+    groups = [pops[group] if group in pops else [group]
               for group in args.groups]
     group_labels = args.groups
     if len(groups) == 1:
