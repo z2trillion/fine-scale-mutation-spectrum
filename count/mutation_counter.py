@@ -10,23 +10,20 @@ from common import (
 )
 
 class MutationCounter:
-    def __init__(self, chrom, output, outfile_path, conserved):
+    def __init__(self, chrom, included_regions):
         self.chrom = chrom
-        self.output = output
-        self.outfile_path = outfile_path
-        self.conserved = conserved
+        self.included_regions = included_regions
 
     def configure(self, line):
         column_labels = line.split()
         self.n_lineages = 2 * (len(column_labels) - 9)
-
-        self.indices = get_column_indices(column_labels)
         self.column_index_to_population = get_column_index_to_population(column_labels)
-        self.mut_count = initialize_mut_count(self.indices)
 
-        self.conserved_ind=0
         self.refseq = reference_sequence(self.chrom)
         self.human_chimp_differences = get_human_chimp_differences(self.chrom)
+
+        for included_region in self.included_regions:
+            included_region.configure(column_labels)
 
     def process_line(self, line):
         s=line.strip('\n').split('\t')
@@ -34,9 +31,11 @@ class MutationCounter:
         context = self.refseq[pos-2:pos+1]
         if 'N' in context:
             return
-        while self.conserved_ind<len(self.conserved)-1 and pos>self.conserved[self.conserved_ind][1]:
-            self.conserved_ind+=1
-        if pos>= self.conserved[self.conserved_ind][0] and pos<=self.conserved[self.conserved_ind][1] and len(s[3]+s[4])==2 and s[6]=='PASS' and s[3] in 'ACGT' and s[4] in 'ACGT':
+
+        for included_region in self.included_regions:
+            included_region.update_position(pos)
+
+        if len(s[3]+s[4])==2 and s[6]=='PASS' and s[3] in 'ACGT' and s[4] in 'ACGT':
             if self.human_chimp_differences.get(pos) == s[4]:
                 reverse=True
                 der_allele='0'
@@ -61,7 +60,38 @@ class MutationCounter:
                     i+=1
                 for pop in populations:
                     if count[pop]>0:
-                        self.mut_count[(this_mut,pop,count[pop])]+=1
+                        for included_regions in self.included_regions:
+                            included_region.update_counts(pos, this_mut, pop, count[pop])
+
+    def write_output(self):
+        for included_region in self.included_regions:
+            included_region.write_output()
+
+
+class IncludedRegion:
+    def __init__(self, chrom, output, outfile_path, conserved):
+        self.chrom = chrom
+        self.output = output
+        self.outfile_path = outfile_path
+        self.conserved = conserved
+
+        self.conserved_ind = 0
+
+    def configure(self, column_labels):
+        self.indices = get_column_indices(column_labels)
+        self.column_index_to_population = get_column_index_to_population(column_labels)
+        self.mut_count = initialize_mut_count(self.indices)
+
+    def update_position(self, pos):
+        while self.conserved_ind<len(self.conserved)-1 and pos>self.conserved[self.conserved_ind][1]:
+            self.conserved_ind+=1
+
+    def update_counts(self, position, mutation, population, count):
+        if (
+            position >= self.conserved[self.conserved_ind][0] and
+            position <= self.conserved[self.conserved_ind][1]
+        ):
+            self.mut_count[(mutation, population, count)] += 1
 
     def write_output(self):
         write_output(self.output, self.outfile_path, self.indices, self.mut_count)
