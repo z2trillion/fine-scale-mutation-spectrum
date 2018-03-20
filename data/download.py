@@ -52,15 +52,16 @@ def download_human_chimp_alignment(chromosome):
 def download_sample_ids_and_bed_files():
     file_path_download_url_map = {
         '1000genomes_phase3_sample_IDs.txt': (
-            'https://www.dropbox.com/s/6mpcybt865nhqi5/'
-            '1000genomes_phase3_sample_IDs.txt'
+            'https://raw.githubusercontent.com/LukeAndersonTrocme/MutSpect/'
+            'master/1000genomes_phase3_sample_IDs.txt'
         ),
         'bed_files/phastConsElements100way.txt.gz': (
-            'https://www.dropbox.com/s/ymvzd2qbogoac7q/'
+            'http://hgdownload.soe.ucsc.edu/goldenPath/hg19/database/'
             'phastConsElements100way.txt.gz'
         ),
         'bed_files/nestedRepeats.txt.gz': (
-            'https://www.dropbox.com/s/rguxr8rqgvf0fcj/nestedRepeats.txt.gz'
+            'http://hgdownload.cse.ucsc.edu/goldenpath/hg19/database/'
+            'nestedRepeats.txt.gz'
         )
     }
 
