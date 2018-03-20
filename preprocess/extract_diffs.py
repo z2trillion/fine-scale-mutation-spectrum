@@ -4,7 +4,7 @@ import gzip
 import sys
 
 def extract_diffs(chrom):
-    infile=gzip.open('../data/hg19_chimp_align/chr%i.hg19.panTro4.net.axt.gz' % chrom)
+    infile=gzip.open('../data/hg19_chimp_align/chr%s.hg19.panTro4.net.axt.gz' % chrom)
     lines=infile.readlines()
     infile.close()
 
@@ -72,7 +72,7 @@ def extract_diffs(chrom):
 
     output+=str(last_end+1)+' Indel 100000000\n'
 
-    outfile=open('../data/hg19_chimp_align/human_chimp_diffs_chr%i.txt' % chrom,'w')
+    outfile=open('../data/hg19_chimp_align/human_chimp_diffs_chr%s.txt' % chrom,'w')
     outfile.write(output)
     outfile.close()
 
@@ -86,8 +86,8 @@ if __name__ == '__main__':
     chromosomes = parser.parse_args(sys.argv[1:]).chromosomes
 
     for chrom in chromosomes:
-        if os.path.isfile('../data/hg19_chimp_align/human_chimp_diffs_chr%i.txt' % chrom):
-            print 'existing human_chimp_diffs file found for chromosome %i' % chrom
+        if os.path.isfile('../data/hg19_chimp_align/human_chimp_diffs_chr%s.txt' % chrom):
+            print 'existing human_chimp_diffs file found for chromosome %s' % chrom
         else:
             extract_diffs(chrom)
-            print 'extracted diffs for chromosome %i' % chrom
+            print 'extracted diffs for chromosome %s' % chrom
