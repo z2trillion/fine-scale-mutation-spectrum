@@ -1,5 +1,7 @@
+import argparse
 import os
 import gzip
+import sys
 
 def extract_diffs(chrom):
     infile=gzip.open('../data/hg19_chimp_align/chr%i.hg19.panTro4.net.axt.gz' % chrom)
@@ -75,8 +77,15 @@ def extract_diffs(chrom):
     outfile.close()
 
 if __name__ == '__main__':
-    for chrom in range(1, 23) + ['X']:
-        chrom = 22
+    valid_chromosomes = ['X'] + [str(i) for i in range(1, 23)]
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--chromosomes', type=str, nargs='+',
+                        default=valid_chromosomes)
+
+    chromosomes = parser.parse_args(sys.argv[1:]).chromosomes
+
+    for chrom in chromosomes:
         if os.path.isfile('../data/hg19_chimp_align/human_chimp_diffs_chr%i.txt' % chrom):
             print 'existing human_chimp_diffs file found for chromosome %i' % chrom
         else:
