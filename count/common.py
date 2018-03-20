@@ -7,13 +7,13 @@ from labels import sample_id_to_population, populations
 
 
 def get_chromosomes_from_args():
+    valid_chromosomes = ['X'] + [str(i) for i in range(1, 23)]
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--chromosomes', type=str, nargs='+',
-                        default=range(1, 23))
+                        default=valid_chromosomes)
 
     chromosomes = parser.parse_args(sys.argv[1:]).chromosomes
-
-    valid_chromosomes = ['X'] + [str(i) for i in range(1, 23)]
     for chrom in chromosomes:
         assert chrom in valid_chromosomes
     return chromosomes
