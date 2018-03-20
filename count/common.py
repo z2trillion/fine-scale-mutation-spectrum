@@ -20,9 +20,14 @@ def get_chromosomes_from_args():
 
 
 def reference_sequence(chromosome_number):
-    file_path = '../data/hg19_reference/chr'+chromosome_number+'_oneline.txt'
-    with open(file_path) as infile:
-        return infile.read()
+    file_path_template = '../data/hg19_reference/chr%s.fa.gz'
+    with gzip.open(file_path_template % chromosome_number) as infile:
+        lines = infile.readlines()
+
+    result = ''
+    for line in lines[1:]:
+        result += line.upper().strip('\n')
+    return result
 
 
 def get_human_chimp_differences(chromosome_number):
@@ -104,7 +109,7 @@ def open_infile(chrom):
 
 
 def get_conserved(infile_path, chrom):
-    infile = open(infile_path)
+    infile = gzip.open(infile_path)
     lines = infile.readlines()
     infile.close()
 

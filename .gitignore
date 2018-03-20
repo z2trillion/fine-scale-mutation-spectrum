@@ -1,4 +1,5 @@
-data
+*.txt
+*.gz
 *.pyc
 finescale_mut_spectra
 *.DS_Store

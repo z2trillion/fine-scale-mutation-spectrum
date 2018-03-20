@@ -1,3 +1,6 @@
+import os
+import errno
+
 from labels import populations
 from common import open_infile, get_conserved, get_chromosomes_from_args
 from mutation_counter import MutationCounter, IncludedRegion
@@ -16,6 +19,13 @@ def get_finescale(mutation_counter):
 
 if __name__ == '__main__':
     chromosomes = get_chromosomes_from_args()
+
+    try:
+        os.mkdir('../finescale_mut_spectra')
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
     for chrom in chromosomes:
         chrom = str(chrom)
         included_regions = []
@@ -27,12 +37,12 @@ if __name__ == '__main__':
 
         output = {population: 'Ref Alt \n' for population in populations}
         outfile_path = '../finescale_mut_spectra/inrepeats_mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
-        conserved = get_conserved('../data/bed_files/nestedRepeats.txt', chrom)
+        conserved = get_conserved('../data/bed_files/nestedRepeats.txt.gz', chrom)
         included_regions.append(IncludedRegion(chrom, output, outfile_path, conserved))
 
         output = {population: 'Ref Alt \n' for population in populations}
         outfile_path = '../finescale_mut_spectra/phyloP_conserved_mut_type_v_allele_freq_%s_chr'+chrom+'_nosingle.txt'
-        conserved = get_conserved('../data/bed_files/phastConsElements100way.txt', chrom)
+        conserved = get_conserved('../data/bed_files/phastConsElements100way.txt.gz', chrom)
         included_regions.append(IncludedRegion(chrom, output, outfile_path, conserved))
 
         mutation_counter = MutationCounter(chrom, included_regions)
