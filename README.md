@@ -8,20 +8,20 @@ clock-like, but is better regarded as a mixture of many different processes that
 damage DNA and cause it to be replicated unfaithfully. These different processes
 can be disentangled by looking at the relative rates of different types of
 mutations, and comparing these relative rates across populations or species. For
-more background, see [Harris & Pritchard eLife
-2017](https://elifesciences.org/articles/24284).  We will be using Python
-scripts to extract mutation spectrum information from a VCF of human variation
-data, the final 1000 Genomes Phase 3 panel, using the human hg19 reference
-genome sequence to identify the sequence context in which each variant occurs
-and using a human-chimpanzee genome alignment for ancestral allele polarization.
-We will then visualize these differences in a two different ways: using a heat
-map and a principal components analysis plot.  If you have time at the end of
-the exercise or after the workshop, consider modifying the pipeline to have a
-look at mutation spectrum variation in a whole genome dataset of your own. Very
-little is known about the ancestral dynamics of the mutation process in species
-outside of humans and great apes, and it would be exciting to see how
-mutagenesis has been varying in species with different demographic histories and
-reproductive strategies.
+more background, see
+[Harris & Pritchard eLife 2017](https://elifesciences.org/articles/24284).  We
+will be using Python scripts to extract mutation spectrum information from a VCF
+of human variation data, the final 1000 Genomes Phase 3 panel, using the human
+hg19 reference genome sequence to identify the sequence context in which each
+variant occurs and using a human-chimpanzee genome alignment for ancestral
+allele polarization. We will then visualize these differences in a two different
+ways: using a heat map and a principal components analysis plot.  If you have
+time at the end of the exercise or after the workshop, consider modifying the
+pipeline to have a look at mutation spectrum variation in a whole genome dataset
+of your own. Very little is known about the ancestral dynamics of the mutation
+process in species outside of humans and great apes, and it would be exciting to
+see how mutagenesis has been varying in species with different demographic
+histories and reproductive strategies.
 
 ## Getting started
 The python scripts that you will need to do the exercise are provided in a
@@ -115,43 +115,45 @@ python make_heatmap.py -p GBR CHB FIN JPT GBR FIN
 ```
 Each grid square represents a mutation type (a mutation from some triplet ABC to
 some other triplet ADC). A red square means that the population listed first has
-a higher proportion of ABC->ADC mutations, relative to other mutation types, than
-the population listed second. A blue square means that the population listed
-first is enriched for ABC->ADC mutations relative to the population listed
-second. In both cases, a white dot on the square means that the difference
-between populations is significant ($latex(\chi^2) significance value p<1e-5).
+a higher proportion of ABC->ADC mutations, relative to other mutation types,
+than the population listed second. A blue square means that the population
+listed first is enriched for ABC->ADC mutations relative to the population
+listed second. In both cases, a white dot on the square means that the
+difference between populations is significant (chi^2 p-value < 1e-5).
 
 Take a moment to compare your heat map with your neighbor’s and discuss your
 observations about it.
 
 Once you’ve successfully your first heat map and discussed it, it’s time to
 start playing with the following optional command line arguments:
-
-	-c chrom1 chrom2 … : only use mutation counts from the chromosomes listed.
-	-Default is range(1,23). f  min_frequency max_frequency: Only count mutations
-	-whose frequencies range between the listed min and max, inclusive. Default is
-	-min_frequency=0, max_frequency=1. e	Exclude: If this flag is used, exclude
-	-the SNPs occurring in PhyloP conserved regions and repetitive regions.  i
-	-Analyze chromosomes individually: If this flag is used, output a separate
-	-heat map for each specified chromosome individually. p pval : Print dots on
-	-all squares representing mutation types that are significantly enriched in
-	-one population at a chi-square significance level of pval. Default = 1e-5.
-
-Use these flags to generate the following heat maps: Generate a heat map using
-only chromosome 22 data with the following 4 comparisons side by side: Great
-Britain vs Han Chinese from Beijing; Finland vs Japanese; Great Britain vs
-Finland; Japanese vs Han Chinese from Beijing. Discuss. Try generating the same
-heat map without excluding repeats or conserved regions. Do you see much of a
-difference? Repeat using precomputed summary data for all 22 autosomes.
-Generate another heat map with the same population comparisons (all 22
+```
+-c chrom1 chrom2 ... : only use mutation counts from the chromosomes listed.
+-Default is range(1,23). f  min_frequency max_frequency: Only count mutations
+-whose frequencies range between the listed min and max, inclusive. Default is
+-min_frequency=0, max_frequency=1. e	Exclude: If this flag is used, exclude
+-the SNPs occurring in PhyloP conserved regions and repetitive regions.  i
+-Analyze chromosomes individually: If this flag is used, output a separate
+-heat map for each specified chromosome individually. p pval : Print dots on
+-all squares representing mutation types that are significantly enriched in
+-one population at a chi-square significance level of pval. Default = 1e-5.
+```
+Use these flags to generate the following heat maps:
+- Generate a heat map using only chromosome 22 data with the following 4
+comparisons side by side: Great Britain vs Han Chinese from Beijing; Finland vs
+Japanese; Great Britain vs Finland; Japanese vs Han Chinese from Beijing.
+Discuss.
+- Try generating the same heat map without excluding repeats or conserved regions.
+Do you see much of a difference?
+- Repeat using precomputed summary data for all 22 autosomes.
+- Generate another heat map with the same population comparisons (all 22
 autosomes), but restricting to alleles with frequency less than 0.98. Discuss
-the differences. Generate two more heat maps with the same population
-comparisons (all 22 autosomes), one restricting to alleles with frequency
-0.5-0.9; one with frequencies 0.1-0.5; one with frequency <0.1. Discuss the
-differences. Generate a new heat map plot with 4 panels that each compare Great
-Britain vs Han Chinese from Beijing, each panel using data from a different
-chromosome. The panels should correspond to chromosomes 1, 2, 22, and X. What do
-you observe?
+the differences.
+- Generate two more heat maps with the same population comparisons (all 22
+autosomes), one restricting to alleles with frequency 0.5-0.9; one with
+frequencies 0.1-0.5; one with frequency <0.1. Discuss the differences.
+- Generate a new heat map plot with 4 panels that each compare Great Britain vs
+Han Chinese from Beijing, each panel using data from a different chromosome. The
+panels should correspond to chromosomes 1, 2, 22, and X. What do you observe?
 
 Principal component analysis
 
