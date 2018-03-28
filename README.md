@@ -1,5 +1,6 @@
 # Visualizing the footprints of mutation spectrum evolution
-These instructions are adapted from Kelley Harris' talk on ??? at ???.
+These are the lecture notes from Kelley Harris' talk on X at the Y workshop in
+Z.
 
 ## Background
 In today’s lecture, you learned that the mutational process is not completely
@@ -7,32 +8,31 @@ clock-like, but is better regarded as a mixture of many different processes that
 damage DNA and cause it to be replicated unfaithfully. These different processes
 can be disentangled by looking at the relative rates of different types of
 mutations, and comparing these relative rates across populations or species. For
-more background, see
-[Harris & Pritchard 2017](https://elifesciences.org/articles/24284).
-
-We will be using Python scripts to extract mutation spectrum information from a
-VCF of human variation data, the final 1000 Genomes Phase 3 panel, using the
-human hg19 reference genome sequence to identify the sequence context in which
-each variant occurs and using a human-chimpanzee genome alignment for ancestral
-allele polarization. We will then visualize these differences using heat maps
-and a principal components analysis plots.  If you have time at the end of the
-exercise or after the workshop, consider modifying the pipeline to have a look
-at mutation spectrum variation in a whole genome dataset of your own. Very
+more background, see [Harris & Pritchard eLife
+2017](https://elifesciences.org/articles/24284).  We will be using Python
+scripts to extract mutation spectrum information from a VCF of human variation
+data, the final 1000 Genomes Phase 3 panel, using the human hg19 reference
+genome sequence to identify the sequence context in which each variant occurs
+and using a human-chimpanzee genome alignment for ancestral allele polarization.
+We will then visualize these differences in a two different ways: using a heat
+map and a principal components analysis plot.  If you have time at the end of
+the exercise or after the workshop, consider modifying the pipeline to have a
+look at mutation spectrum variation in a whole genome dataset of your own. Very
 little is known about the ancestral dynamics of the mutation process in species
 outside of humans and great apes, and it would be exciting to see how
 mutagenesis has been varying in species with different demographic histories and
 reproductive strategies.
 
 ## Getting started
-The python scripts that you will need to do the exercise are provided in this
-repository. You can download the data you will need for the exercise by running
-the following commands:
-```
-cd data
-python download.py
-```
-While that runs, here is a breakdown of the
- - VCF files list the SNPs that occur in a set of whole genome sequences. For
+The python scripts that you will need to do the exercise are provided in a
+folder called “fine-scale-mutation-spectrum-master.” You will notice that the
+folder contains a directory called “data,” which contains processed data for
+most of the human genome but is missing chromosome 22. Your first step will be
+to download the missing chromosome 22 data from the UCSC genome browser and the
+1000 Genomes FTP server, so that you get to practice looking through the rich
+treasure troves of public data available on the internet.
+
+VCF files list the SNPs that occur in a set of whole genome sequences. For
 each SNP, they list the position in the reference sequence where the occurs,
 the reference base at that position, and the alternate base that occurs in
 many of the reads that map to that position. However, the VCF file is missing
@@ -44,13 +44,12 @@ sequence? To add these pieces of information to the VCF, we must download but
 the reference genome sequence and an alignment between the reference genome
 and an outgroup genome, then reformat these files.
 
-Downloading and preprocessing your reference files
-
-	Your first task is to use the UCSC Genome Browser to find the hg19 human
-	reference sequence and an alignment between hg19 and the most up-to-date
-	chimpanzee reference sequence. Download the reference sequence and the
-	hg19-chimp reference sequence for chromosome 22. Put these sequences into the
-	directories “data/hg19_reference” and data/hg19_chimp_align”, respectively.
+## Downloading and preprocessing your reference files
+Your first task is to use the UCSC Genome Browser to find the hg19 human
+reference sequence and an alignment between hg19 and the most up-to-date
+chimpanzee reference sequence. Download the reference sequence and the
+hg19-chimp reference sequence for chromosome 22. Put these sequences into the
+directories “data/hg19_reference” and data/hg19_chimp_align”, respectively.
 
 We will also use the UCSC Genome Browser to obtain bed file annotations of
 regions of the genome that we may want to filter out of our analysis. We want to
@@ -63,30 +62,30 @@ regions. Next, use the Genome Browser website to look for the files
 files that are indexed with respect to the hg19 reference. Put these files into
 the empty folder “data/bed”.
 
-	The directory “preprocess” contains two scripts that are needed to reformat
-	these raw reference files. You can run them with the commands: python
-	gen_oneline_format.py [chromosome_number] #reformats the reference fasta
-	python extract_diffs.py [chromsome_number] #reformats the alignment to the
-	outgroup
+The directory “preprocess” contains a script to reformat the alignment to the
+outgroup. You can run it from that directory with this command:
+```
+python extract_diffs.py [chromsome_number]
+```
 
 ## Extracting the mutation spectrum from the VCF
-	Armed with your preprocessed reference files, you can now extract the mutation
-	spectrum of chromosome 22. I pre-extracted the mutation spectra of the other
-	chromosomes; you can see that these processed spectra are located in the
-	folder “finescale_mut_spectra”, and that the chromosome 22 mutation spectrum
-	is missing.
+Armed with your preprocessed reference files, you can now extract the mutation
+spectrum of chromosome 22. I pre-extracted the mutation spectra of the other
+chromosomes; you can see that these processed spectra are located in the folder
+“finescale_mut_spectra”, and that the chromosome 22 mutation spectrum is
+missing.
 
-	To generate the chromosome 22 mutation spectrum, you will need to google the
-	1000 Genomes Project Phase 3 FTP server, download the VCF file for chromosome
-	22, and add it to the empty folder “data/vcfs”.  (Hint: look for the 1000
-	Genomes FTP, look through the directory structure for a folder called
-	“release,” then look inside the release folder for the subdirectory that has
-	been modified most recently. This will contain the VCF you want). Then, use
-	the following command from the “count” directory to count the number of SNPs
-	occurring in each triplet sequence context at each allele frequency:
-
-	python process_chromosomes.py [chromosome_number]
-
+To generate the chromosome 22 mutation spectrum, you will need to google the
+1000 Genomes Project Phase 3 FTP server, download the VCF file for chromosome
+22, and add it to the empty folder “data/vcfs”.  (Hint: look for the 1000
+Genomes FTP, look through the directory structure for a folder called “release,”
+then look inside the release folder for the subdirectory that has been modified
+most recently. This will contain the VCF you want). Then, use the following
+command from the “count” directory to count the number of SNPs occurring in each
+triplet sequence context at each allele frequency:
+```
+python process_chromosomes.py [chromosome_number]
+```
 Note that singletons are excluded from the counts due to concerns that they
 could be enriched for sequencing errors.
 
@@ -102,8 +101,7 @@ spectra contained within any genomic annotation you can specify with a bed file,
 say, with high recombination rate regions or within open chromatin. If you have
 time at the end of the exercise, you can experiment with doing this.  
 
-Creating a mutation spectrum heat map
-
+## Creating a mutation spectrum heat map
 Now that you’ve tabulated mutation spectrum data for each population, it’s time
 to visualize the data so we can pick out differences between populations. The
 script you will use is “make_heatmap.py”, within the “plot” directory. There are
@@ -112,16 +110,16 @@ a lot of different options built in, which I hope you’ll play around with.
 First, make a figure with three side by side mutation spectrum comparisons:
 Great Britain (GBR) vs Chinese from Beijing (CHB); Finnish (FIN) vs Japanese
 from Tokyo (JPT); GBR vs FIN; JPT vs CHB. The command for doing this is:
-
-	python make_heatmap.py -p GBR CHB FIN JPT GBR FIN
-
+```
+python make_heatmap.py -p GBR CHB FIN JPT GBR FIN
+```
 Each grid square represents a mutation type (a mutation from some triplet ABC to
 some other triplet ADC). A red square means that the population listed first has
-a higher proportion of ABC>ADC mutations, relative to other mutation types, than
+a higher proportion of ABC->ADC mutations, relative to other mutation types, than
 the population listed second. A blue square means that the population listed
-first is enriched for ABC>ADC mutations relative to the population listed
+first is enriched for ABC->ADC mutations relative to the population listed
 second. In both cases, a white dot on the square means that the difference
-between populations is significant (chi2 significance value p<10-5).
+between populations is significant ($latex(\chi^2) significance value p<1e-5).
 
 Take a moment to compare your heat map with your neighbor’s and discuss your
 observations about it.
@@ -155,7 +153,8 @@ Britain vs Han Chinese from Beijing, each panel using data from a different
 chromosome. The panels should correspond to chromosomes 1, 2, 22, and X. What do
 you observe?
 
-## Principal component analysis
+Principal component analysis
+
 Although the mutation spectrum heat map is good for pinpointing differences
 between populations in the types of mutations that have been accumulating, it is
 less suitable for visualizing how the differentiation between populations
@@ -164,14 +163,14 @@ mutation spectrum varies within populations, we will use a type of principal
 component analysis (PCA).
 
 You have probably seen population-differentiation PCAs before, as pioneered in
-[Novembre, et al. Nature 2008](https://www.nature.com/articles/nature07331).
-These PCAs are generated by summarizing each genome as a 10,000(+)-dimensional
-genotype vector, then projecting these vectors onto the optimal 2-dimensional
-plane for viewing. Here, we will summarize each genome as a 96-dimensional
-vector that counts the proportion of derived alleles from that genome falling
-into the 96 possible frequency classes (You might think that there are 192
-mutation categories of the form ABC->ADC, but recall that each mutation type is
-the same as its reverse complement, e.g. CCA->CTA is the same as TGG->TAG.)
+Novembre, et al. Nature 2008. These PCAs are generated by summarizing each
+genome as a 10,000(+)-dimensional genotype vector, then projecting these vectors
+onto the optimal 2-dimensional plane for viewing. Here, we will summarize each
+genome as a 96-dimensional vector that counts the proportion of derived alleles
+from that genome falling into the 96 possible frequency classes (You might think
+that there are 192 mutation categories of the form ABC>ADC, but recall that each
+mutation type is the same as its reverse complement, e.g. CCA>CTA is the same as
+TGG> TAG.)
 
 To make mutation spectrum PCA plots, we need to count mutations in a different
 way than we counted them for the heat maps. Instead of counting the number of
@@ -179,9 +178,9 @@ mutations that occur in each frequency class, we need to count the number that
 occur within each genome. As before, we exclude singletons due to data quality
 concerns. To count the mutation types in each genome for chromosome 22, run the
 following command in the “count” directory:
-```
-python count_derived_each_lineage_nosingle.py -c 22
-```
+
+	python count_derived_each_lineage_nosingle.py -c 22
+
 As before, counts for the remaining chromosomes are waiting precomputed for you
 in the “finescale_mut_spectra” folder.
 
@@ -249,13 +248,13 @@ says that CHB (Han Chinese from Beijing) and JPT (Japanese from Tokyo) are both
 EAS (East Asian) populations. Delete this header and replace it with the
 following one, which classifies Arabidopsis populations into the appropriate
 continents:
-```
+
 group_to_populations = { ‘east_eurasia':
 [‘central_europe’,’central_asia’,italy_balkan_caucasus’], ‘sweden’:
 [‘northern_sweden’,’southern_sweden’], ‘west_eurasia’:
 [‘western_europe’,’germany’,’iberian_peninsula’], 'relict': [‘relict’],
 'admixed': [‘admixed’] }
-```
+
 Use what you learned from the human mutation spectrum exercise to preprocess the
 Arabidopsis data, count mutations, and investigate mutation spectrum variation
 across worldwide accessions of Arabidopsis.
