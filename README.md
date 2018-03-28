@@ -1,7 +1,7 @@
-#Visualizing the footprints of mutation spectrum evolution These instructions
+# Visualizing the footprints of mutation spectrum evolution These instructions
 #are adapted from Kelley Harris' talk on ??? at ???.
 
-##Background
+## Background
 
 In today’s lecture, you learned that the mutational process is not completely
 clock-like, but is better regarded as a mixture of many different processes that
