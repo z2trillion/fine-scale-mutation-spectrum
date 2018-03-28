@@ -128,17 +128,17 @@ Once you’ve successfully your first heat map and discussed it, it’s time to
 start playing with the following optional command line arguments:
 ```
 -c chrom1 chrom2 ... : only use mutation counts from the chromosomes listed.
-											 Default is range(1,23).
+   Default is range(1,23).
 -f min_frequency max_frequency: Only count mutations whose frequencies range
-															  between the listed min and max, inclusive.
-																Default is min_frequency=0, max_frequency=1.
+    between the listed min and max, inclusive.
+  Default is min_frequency=0, max_frequency=1.
 -e : If this flag is used, exclude the SNPs occurring in PhyloP conserved regions
-		 and repetitive regions.  
+   and repetitive regions.  
 -i : Analyze chromosomes individually: If this flag is used, output a separate
-	   heat map for each specified chromosome individually.
+     heat map for each specified chromosome individually.
 -p pval : Print white dots on all squares representing mutation types that are
-				  significantly enriched in one population at a chi-square significance
-					level of pval. Default = 1e-5.
+    significantly enriched in one population at a chi-square significance
+  level of pval. Default = 1e-5.
 ```
 Use these flags to generate the following heat maps:
 - Generate a heat map using only chromosome 22 data with the following 4
@@ -199,7 +199,7 @@ the variation within the two groups. As with heat maps, you can restrict to a
 subset of chromosomes using the -c flag:
 ```
 -c chrom1 chrom2 ... : only use mutation counts from the chromosomes listed.
-											 Default is range(1,23).
+   Default is range(1,23).
 ```
 Here are some exercises to get you acquainted with mutation spectrum PCAs:
 - Using the chromosome 22 data you just generated, make a PCA plot comparing the
@@ -243,11 +243,11 @@ While you have the labels.py file open, edit the header section that currently
 reads:
 ```
 group_to_populations = {
-	'EAS': ['CHB', 'JPT', 'CHS', 'CDX', 'KHV', 'CHD'],
-	'EUR': ['CEU', 'TSI', 'GBR', 'FIN', 'IBS'],
-	'AFR': ['YRI', 'LWK', 'GWD', 'MSL', 'ESN', 'ACB', 'ASW'],
-	'SAS': ['GIH', 'PJL', 'BEB', 'STU', 'ITU'],
-	'AMR': ['CLM', 'MXL', 'PUR', 'PEL'],
+  'EAS': ['CHB', 'JPT', 'CHS', 'CDX', 'KHV', 'CHD'],
+  'EUR': ['CEU', 'TSI', 'GBR', 'FIN', 'IBS'],
+  'AFR': ['YRI', 'LWK', 'GWD', 'MSL', 'ESN', 'ACB', 'ASW'],
+  'SAS': ['GIH', 'PJL', 'BEB', 'STU', 'ITU'],
+  'AMR': ['CLM', 'MXL', 'PUR', 'PEL'],
 }
 ```
 This current header assigns the 3-letter codes that stand for human populations
@@ -258,11 +258,11 @@ following one, which classifies Arabidopsis populations into the appropriate
 continents:
 ```
 group_to_populations = {
-	'east_eurasia': ['central_europe', 'central_asia', 'italy_balkan_caucasus'],
-	'sweden': ['northern_sweden', 'southern_sweden'],
-	'west_eurasia': ['western_europe', 'germany', 'iberian_peninsula'],
-	'relict': ['relict'],
-	'admixed': ['admixed'],
+  'east_eurasia': ['central_europe', 'central_asia', 'italy_balkan_caucasus'],
+  'sweden': ['northern_sweden', 'southern_sweden'],
+  'west_eurasia': ['western_europe', 'germany', 'iberian_peninsula'],
+  'relict': ['relict'],
+  'admixed': ['admixed'],
 }
 ```
 Use what you learned from the human mutation spectrum exercise to preprocess the
