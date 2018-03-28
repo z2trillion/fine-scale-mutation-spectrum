@@ -1,6 +1,6 @@
 # Visualizing the footprints of mutation spectrum evolution
-These are the lecture notes from Kelley Harris' talk on X at the Y workshop in
-Z.
+These are the lecture notes from Kelley Harris' talk at the 2018 Workshop on
+Population and Speciation Genomics in Český Krumlov.
 
 ## Background
 In today’s lecture, you learned that the mutational process is not completely
@@ -158,7 +158,7 @@ frequencies 0.1-0.5; one with frequency <0.1. Discuss the differences.
 Han Chinese from Beijing, each panel using data from a different chromosome. The
 panels should correspond to chromosomes 1, 2, 22, and X. What do you observe?
 
-# Principal component analysis
+## Principal component analysis
 Although the mutation spectrum heat map is good for pinpointing differences
 between populations in the types of mutations that have been accumulating, it is
 less suitable for visualizing how the differentiation between populations
